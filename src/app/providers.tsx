@@ -1,16 +1,29 @@
 'use client'
 
-import {CacheProvider, ThemeProvider} from '@emotion/react'
+import {CacheProvider, ThemeProvider as EmotionThemeProvider} from '@emotion/react'
 import {useState} from 'react'
 import createCache from '@emotion/cache'
 import {useServerInsertedHTML} from 'next/navigation'
+import {ChakraProvider, extendTheme} from '@chakra-ui/react'
 
-const theme = {
+// Emotion theme
+const emotionTheme = {
     colors: {
         primary: '#0070f3',
         secondary: '#ff4081',
     },
 }
+
+// Chakra UI theme
+const chakraTheme = extendTheme({
+    colors: {
+        brand: {
+            900: '#1a365d',
+            800: '#153e75',
+            700: '#2a69ac',
+        },
+    },
+})
 
 export default function Providers({children}: { children: React.ReactNode }) {
     const [cache] = useState(() => {
@@ -30,9 +43,11 @@ export default function Providers({children}: { children: React.ReactNode }) {
 
     return (
         <CacheProvider value={cache}>
-            <ThemeProvider theme={theme}>
-                {children}
-            </ThemeProvider>
+            <EmotionThemeProvider theme={emotionTheme}>
+                <ChakraProvider theme={chakraTheme}>
+                    {children}
+                </ChakraProvider>
+            </EmotionThemeProvider>
         </CacheProvider>
     )
 }

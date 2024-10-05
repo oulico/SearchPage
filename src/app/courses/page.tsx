@@ -1,3 +1,4 @@
+'use client'
 import React from 'react';
 import {SearchArea} from "@/app/courses/components/widget/SearchArea";
 import {Filter} from "@/app/courses/components/widget/Filter";
@@ -8,8 +9,8 @@ const SearchPage = () => {
     return (
         <main>
             <SearchArea/>
-            <Filter/>
-            <Pagination/>
+            {/*<Filter/>*/}
+            {/*<Pagination/>*/}
         </main>
     );
 };
