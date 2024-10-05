@@ -34,8 +34,11 @@
       "lib/*": [
         "src/lib/*"
       ],
+      "constants/*": [
+        "src/constants/*"
+      ],
       "hooks/*": [
-        "hooks/*"
+        "src/hooks/*"
       ]
     }
   },
