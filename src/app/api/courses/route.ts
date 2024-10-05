@@ -8,19 +8,14 @@ interface Tag {
     name: string;
 }
 
-// 코스 인터페이스 정의
 interface Course {
-    id: number;
-    title: string;
-    short_description: string;
-    taglist: string[];
-    image_file_url: string;
-    is_free: boolean;
+    [key: string]: unknown;
+
     tags: Tag[];
 }
 
 // BFF 코스 인터페이스 정의
-interface BffCourse {
+export interface BffCourse {
     id: number;
     title: string;
     short_description: string;
@@ -28,6 +23,7 @@ interface BffCourse {
     image_file_url: string;
     is_free: boolean;
     subtitle: string;
+    discounted_price: string;
 }
 
 // 쿼리스트링에 들어갈 필터 조건의 Zod 스키마 선언
@@ -93,13 +89,15 @@ export async function GET(req: NextRequest) {
             taglist: course.taglist,
             image_file_url: course.image_file_url,
             is_free: course.is_free,
+            price: course.price,
+            discounted_price: course.discounted_price,
             subtitle: course.tags
                 .filter((tag: Tag) => tag.tag_type === 3)
                 .map((tag: Tag) => tag.name)
                 .join(', '),
         }));
 
-        return NextResponse.json({bffCourses}, {status: 200});
+        return NextResponse.json(bffCourses, {status: 200});
     } catch (error) {
         return NextResponse.json({error: "Failed to fetch data from external API"}, {status: 500});
     }

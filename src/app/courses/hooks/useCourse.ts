@@ -4,15 +4,16 @@ import {getBaseURL} from 'utils/getBaseURL';
 import {assert} from 'utils/assert';
 import {useQueryClient} from "app/providers/QueryClientProvider";
 
-// 코스 타입 정의
-interface Course {
+interface Tag {
     id: number;
-    title: string;
-    short_description: string;
-    taglist: string[];
-    image_file_url: string | null;
-    is_free: boolean;
-    subtitle: string;
+    tag_type: number;
+    name: string;
+}
+
+interface Course {
+    [key: string]: unknown;
+
+    tags: Tag[];
 }
 
 // 쿼리 파라미터 타입 정의
@@ -25,9 +26,6 @@ interface QueryParams {
     count: string;
 }
 
-const MOCK_COURSES: Course[] = [
-    // ... (기존 MOCK_COURSES 데이터)
-];
 
 export const useCourse = () => {
     const searchParams = useSearchParams();
@@ -55,24 +53,19 @@ export const useCourse = () => {
                 }
             });
 
-            console.log('url:', url.toString());
 
-            // API 호출 대신 목업 데이터 반환
-            return MOCK_COURSES;
+            const response = await fetch(url.toString(), {
+                credentials: 'include',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+            });
 
-            // 실제 API 호출 시 아래 코드 사용
-            // const response = await fetch(url.toString(), {
-            //   credentials: 'include',
-            //   headers: {
-            //     'Content-Type': 'application/json',
-            //   },
-            // });
-            //
-            // if (!response.ok) {
-            //   throw new Error('Network response was not ok');
-            // }
-            //
-            // return await response.json();
+            if (!response.ok) {
+                throw new Error('Network response was not ok');
+            }
+
+            return await response.json();
         },
     });
 
