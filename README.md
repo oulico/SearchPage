@@ -1,6 +1,6 @@
 ## UI Components
 
-- [ ] Layout.tsx
+- [x] Layout.tsx
 - [ ] SearchArea.tsx
 - [ ] Filter ⏫
 - state(keyword,price)가 url에 저장된다고 보면 됨. useParam 사용하기.
@@ -19,6 +19,7 @@
 - [ ] Pagination
 - [ ] Box
     - ![[CleanShot 2024-10-05 at 10.14.27.png]]
+
  ```
 
 const pages = (클릭한 숫자) => {
@@ -53,8 +54,8 @@ const pages =
  </Box>
 ```
 
-
 ## etc
+
 - [ ] StateManagement
 - [ ] fetch
 

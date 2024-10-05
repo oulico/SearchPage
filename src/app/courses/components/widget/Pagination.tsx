@@ -1,5 +1,6 @@
-import React from 'react';
-import {OutlineWrapper} from "@/app/components/Outliner";
+'use client'
+
+import {OutlineWrapper} from "@/app/courses/components/ui/Outliner";
 
 export const Pagination = () => {
     return (
