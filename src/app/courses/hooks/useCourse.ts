@@ -3,6 +3,7 @@ import {useSuspenseQuery} from '@tanstack/react-query';
 import {getBaseURL} from 'utils/getBaseURL';
 import {useState, useEffect, useCallback} from 'react';
 import debounce from 'lodash/debounce';
+import {BffCourseList} from "app/api/courses/route";
 
 interface Tag {
     id: number;
@@ -54,7 +55,7 @@ export const useCourse = () => {
 
     const {data, ...rest} = useSuspenseQuery({
         queryKey: ['courses', {...queryParams, title: debouncedTitle}],
-        queryFn: async (): Promise<Course[]> => {
+        queryFn: async (): Promise<BffCourseList> => {
             const url = new URL(`${getBaseURL()}/api/courses`);
 
             Object.entries({...queryParams, title: debouncedTitle}).forEach(([key, value]) => {

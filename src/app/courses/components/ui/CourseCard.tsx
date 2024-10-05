@@ -7,30 +7,28 @@ import {Img} from '@chakra-ui/react'
 import {BffCourse} from "app/api/courses/route";
 
 export const CourseCard = ({course}: { course: BffCourse }) => {
-    console.log(course)
+    console.log(course);
     return (
-        <OutlineWrapper>
-            <Card maxW='sm' height={'100%'}>
-                <CardBody>
-                    <Img
-                        src={course.image_file_url}
-                        alt={course.title}
-                        borderRadius='lg'
-                    />
-                    <Stack mt='6' spacing='3'>
-                        <Heading size='md'>{course.title}</Heading>
-                        <Text>
-                            {course.short_description}
-                        </Text>
-                    </Stack>
-                </CardBody>
-                {/*<Divider/>*/}
-                <CardFooter>
+        <Card maxW='sm' height={'100%'}>
+            <CardBody>
+                <Img
+                    src={course.logoFileUrl}
+                    alt={course.title}
+                    borderRadius='lg'
+                />
+                <Stack mt='6' spacing='3'>
+                    <Heading size='md'>{course.title}</Heading>
                     <Text>
-                        {course.discounted_price === '0' ? '무료' : course.discounted_price}
+                        {course.shortDescription} {/* 필드명 수정 */}
                     </Text>
-                </CardFooter>
-            </Card>
-        </OutlineWrapper>
+                </Stack>
+            </CardBody>
+            {/*<Divider/>*/}
+            <CardFooter>
+                <Text>
+                    {course.discountedPrice === '0' ? '무료' : course.discountedPrice} {/* 필드명 수정 */}
+                </Text>
+            </CardFooter>
+        </Card>
     );
 };

@@ -3,6 +3,7 @@ import {AsyncBoundary} from "@toss/async-boundary";
 import {CourseCard} from "app/courses/components/ui/CourseCard";
 import {useCourse} from "app/courses/hooks/useCourse";
 import styled from "@emotion/styled";
+import {BffCourseList} from "app/api/courses/route";  // BffCourseList 인터페이스 import
 
 // styled emotion
 const CardWrapper = styled.div`
@@ -27,10 +28,18 @@ export const Courses: React.FC = () => {
 const CoursesContent: React.FC = () => {
     const {courses} = useCourse();
 
+
+    if (!courses) {
+        return null;
+    }
+    if (!courses.courses) {
+        return null;
+    }
+
     return (
         <CardWrapper>
-            {courses.map((course) => (
-                <CourseCard key={course.id} course={course}/>
+            {courses.courses.map((course) => (
+                <CourseCard key={course.title} course={course}/>
             ))}
         </CardWrapper>
     );
