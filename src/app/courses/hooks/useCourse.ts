@@ -1,8 +1,8 @@
 import {useSearchParams} from 'next/navigation';
 import {useSuspenseQuery} from '@tanstack/react-query';
 import {getBaseURL} from 'utils/getBaseURL';
-import {assert} from 'utils/assert';
-import {useQueryClient} from "app/providers/QueryClientProvider";
+import {useState, useEffect, useCallback} from 'react';
+import debounce from 'lodash/debounce';
 
 interface Tag {
     id: number;
@@ -16,7 +16,6 @@ interface Course {
     tags: Tag[];
 }
 
-// 쿼리 파라미터 타입 정의
 interface QueryParams {
     title?: string;
     status?: string[];
@@ -26,12 +25,11 @@ interface QueryParams {
     count: string;
 }
 
-
 export const useCourse = () => {
     const searchParams = useSearchParams();
+    const [debouncedTitle, setDebouncedTitle] = useState<string | undefined>(searchParams.get('title') || undefined);
 
     const queryParams: QueryParams = {
-        title: searchParams.get('title') || undefined,
         status: searchParams.getAll('status'),
         is_datetime_enrollable: searchParams.get('is_datetime_enrollable') || undefined,
         sort_by: searchParams.get('sort_by') || 'created_datetime.desc',
@@ -39,20 +37,33 @@ export const useCourse = () => {
         count: searchParams.get('count') || '12',
     };
 
+    const debouncedSetTitle = useCallback(
+        debounce((title: string | undefined) => {
+            setDebouncedTitle(title);
+        }, 300),
+        []
+    );
+
+    useEffect(() => {
+        const title = searchParams.get('title') || undefined;
+        debouncedSetTitle(title);
+        return () => {
+            debouncedSetTitle.cancel();
+        };
+    }, [searchParams, debouncedSetTitle]);
 
     const {data, ...rest} = useSuspenseQuery({
-        queryKey: ['courses', queryParams],
+        queryKey: ['courses', {...queryParams, title: debouncedTitle}],
         queryFn: async (): Promise<Course[]> => {
             const url = new URL(`${getBaseURL()}/api/courses`);
 
-            Object.entries(queryParams).forEach(([key, value]) => {
+            Object.entries({...queryParams, title: debouncedTitle}).forEach(([key, value]) => {
                 if (Array.isArray(value)) {
                     value.forEach(v => url.searchParams.append(key, v));
                 } else if (value !== undefined) {
                     url.searchParams.append(key, value);
                 }
             });
-
 
             const response = await fetch(url.toString(), {
                 credentials: 'include',
