@@ -1,85 +1,83 @@
-import {useSearchParams} from 'next/navigation';
-import {useSuspenseQuery} from '@tanstack/react-query';
+'use client'
+import {useQuery, QueryClient, QueryFunctionContext} from '@tanstack/react-query';
 import {getBaseURL} from 'utils/getBaseURL';
-import {useState, useEffect, useCallback} from 'react';
-import debounce from 'lodash/debounce';
 import {BffCourseList} from "app/api/courses/route";
+import {usePathname, useSearchParams} from 'next/navigation';
 
-interface Tag {
-    id: number;
-    tag_type: number;
-    name: string;
+interface UseCourseParams {
+    page: number;
+    pageSize?: number;
 }
 
-interface Course {
-    [key: string]: unknown;
-
-    tags: Tag[];
-}
-
-interface QueryParams {
+interface CourseQueryParams {
     title?: string;
     status?: string[];
-    is_datetime_enrollable?: string;
-    sort_by: string;
-    offset: string;
-    count: string;
+    is_datetime_enrollable?: boolean;
+    sort_by?: string;
+    page: number;
+    pageSize: number;
 }
 
-export const useCourse = () => {
-    const searchParams = useSearchParams();
-    const [debouncedTitle, setDebouncedTitle] = useState<string | undefined>(searchParams.get('title') || undefined);
+const DEFAULT_PAGE_SIZE = 20;
 
-    const queryParams: QueryParams = {
-        status: searchParams.getAll('status'),
-        is_datetime_enrollable: searchParams.get('is_datetime_enrollable') || undefined,
-        sort_by: searchParams.get('sort_by') || 'created_datetime.desc',
-        offset: searchParams.get('offset') || '0',
-        count: searchParams.get('count') || '12',
-    };
+export const fetchCourses = async ({
+                                       title,
+                                       status,
+                                       is_datetime_enrollable,
+                                       sort_by,
+                                       page,
+                                       pageSize,
+                                   }: CourseQueryParams): Promise<BffCourseList> => {
+    const searchParams = new URLSearchParams({
+        page: page.toString(),
+        pageSize: pageSize.toString(),
+    });
 
-    const debouncedSetTitle = useCallback(
-        debounce((title: string | undefined) => {
-            setDebouncedTitle(title);
-        }, 300),
-        []
-    );
+    if (title) searchParams.append('title', title);
+    if (status) status.forEach(s => searchParams.append('status', s));
+    if (is_datetime_enrollable !== undefined) searchParams.append('is_datetime_enrollable', is_datetime_enrollable.toString());
+    if (sort_by) searchParams.append('sort_by', sort_by);
 
-    useEffect(() => {
-        const title = searchParams.get('title') || undefined;
-        debouncedSetTitle(title);
-        return () => {
-            debouncedSetTitle.cancel();
-        };
-    }, [searchParams, debouncedSetTitle]);
+    const url = `${getBaseURL()}/api/courses?${searchParams.toString()}`;
 
-    const {data, ...rest} = useSuspenseQuery({
-        queryKey: ['courses', {...queryParams, title: debouncedTitle}],
-        queryFn: async (): Promise<BffCourseList> => {
-            const url = new URL(`${getBaseURL()}/api/courses`);
-
-            Object.entries({...queryParams, title: debouncedTitle}).forEach(([key, value]) => {
-                if (Array.isArray(value)) {
-                    value.forEach(v => url.searchParams.append(key, v));
-                } else if (value !== undefined) {
-                    url.searchParams.append(key, value);
-                }
-            });
-
-            const response = await fetch(url.toString(), {
-                credentials: 'include',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-            });
-
-            if (!response.ok) {
-                throw new Error('Network response was not ok');
-            }
-
-            return await response.json();
+    const response = await fetch(url, {
+        credentials: 'include',
+        headers: {
+            'Content-Type': 'application/json',
         },
     });
 
-    return {courses: data, ...rest};
+    if (!response.ok) {
+        throw new Error('Failed to fetch courses');
+    }
+
+    return await response.json();
+};
+
+export const useCourse = ({page, pageSize = DEFAULT_PAGE_SIZE}: UseCourseParams) => {
+    const searchParams = useSearchParams();
+    const pathname = usePathname();
+    const queryParams: CourseQueryParams = {
+        title: searchParams.get('title') || undefined,
+        status: searchParams.getAll('status'),
+        is_datetime_enrollable: searchParams.get('is_datetime_enrollable') === 'true' || undefined,
+        sort_by: searchParams.get('sort_by') || undefined,
+        page,
+        pageSize,
+    };
+
+    return useQuery<BffCourseList, Error>({
+        queryKey: ['courses', pathname, queryParams],
+        queryFn: () => fetchCourses(queryParams),
+    });
+};
+
+export const prefetchCoursesData = async (
+    queryClient: QueryClient,
+    queryParams: CourseQueryParams
+) => {
+    await queryClient.prefetchQuery({
+        queryKey: ['courses', queryParams],
+        queryFn: () => fetchCourses(queryParams),
+    });
 };
