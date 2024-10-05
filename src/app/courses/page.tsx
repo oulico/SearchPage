@@ -9,7 +9,7 @@ const SearchPage = () => {
     return (
         <main>
             <SearchArea/>
-            {/*<Filter/>*/}
+            <Filter/>
             {/*<Pagination/>*/}
         </main>
     );
