@@ -1,5 +1,7 @@
-import {useMemo} from "react";
-import {useSearchParams} from "next/navigation";
+'use client'
+
+import React, {useMemo, useCallback} from "react";
+import {useRouter, useSearchParams} from 'next/navigation';
 import {
     CATEGORY_LABELS,
     COURSE_TYPE_LABELS,
@@ -31,78 +33,101 @@ const StyledTable = styled.table`
     }
 `;
 
+// 타입 정의
+type FilterKey = 'category' | 'courseType' | 'programmingLanguage' | 'field' | 'level' | 'price';
 
-export const Filter = () => {
+interface SelectedParams {
+    category: Record<string, number>;
+    courseType: Record<string, number>;
+    programmingLanguage: Record<string, number>;
+    field: Record<string, number>;
+    level: Record<string, number>;
+    price: Record<string, number>;
+}
+
+export const Filter: React.FC = () => {
+    const router = useRouter();
     const searchParams = useSearchParams();
 
-    const getSelectedParams = (key: string, labels: Record<string, number>) => {
+    const getSelectedParams = useCallback((key: FilterKey, labels: Record<string, number>) => {
         const selectedValues = searchParams.getAll(key).map(Number);
         return Object.entries(labels).reduce((acc, [label, value]) => {
             acc[label] = selectedValues.includes(value) ? value : 0; // 선택된 값이 없으면 0으로 설정
             return acc;
         }, {} as Record<string, number>);
-    };
+    }, [searchParams]);
 
-    const selectedParams = useMemo(() => ({
+    const selectedParams = useMemo<SelectedParams>(() => ({
         category: getSelectedParams('category', CATEGORY_LABELS),
         courseType: getSelectedParams('courseType', COURSE_TYPE_LABELS),
         programmingLanguage: getSelectedParams('programmingLanguage', PROGRAMMING_LANGUAGE_LABELS),
         field: getSelectedParams('field', FIELD_LABELS),
         level: getSelectedParams('level', LEVEL_LABELS),
         price: getSelectedParams('price', PRICE_LABELS),
-    }), [searchParams]);
+    }), [getSelectedParams]);
 
-    const updateSearchParams = (key: string, value: number) => {
-        const currentValues = searchParams.getAll(key).map(Number);
-        const newValues = currentValues.includes(value)
-            ? currentValues.filter(v => v !== value) // 토글 오프
-            : [...currentValues, value]; // 토글 온
-
+    const updateSearchParams = useCallback((key: FilterKey, value: number) => {
         const newSearchParams = new URLSearchParams(searchParams.toString());
-        newSearchParams.delete(key); // 기존 파라미터 제거
-        newValues.forEach(v => newSearchParams.append(key, v.toString())); // 새로운 값 추가
+        const currentValues = newSearchParams.getAll(key).map(Number);
 
-        window.history.replaceState({}, '', `?${newSearchParams.toString()}`);
-    };
+        let newValues: number[];
+        if (currentValues.includes(value)) {
+            // 토글 오프: 값 제거
+            newValues = currentValues.filter(v => v !== value);
+        } else {
+            // 토글 온: 값 추가
+            newValues = [...currentValues, value];
+        }
 
-    const renderToggleButtons = (labels: Record<string, number>, key: keyof typeof selectedParams) => (
-        Object.entries(labels).map(([label, value]) => (
-            <ToggleButton
-                key={value}
-                label={label}
-                isSelected={selectedParams[key][label] > 0}
-                onToggle={() => updateSearchParams(key, value)}
-            />
-        ))
-    );
+        // 기존 파라미터 제거 후 새 값 설정
+        newSearchParams.delete(key);
+        newValues.forEach(v => newSearchParams.append(key, v.toString()));
+
+        // Next.js 라우터를 사용하여 URL 업데이트
+        router.push(`?${newSearchParams.toString()}`, {scroll: false});
+    }, [searchParams, router]);
+
+    const renderToggleButtons = useMemo(() => (
+        (labels: Record<string, number>, key: keyof SelectedParams) => (
+            Object.entries(labels).map(([label, value]) => (
+                <ToggleButton
+                    key={value}
+                    label={label}
+                    isSelected={selectedParams[key][label] > 0}
+                    onToggle={() => updateSearchParams(key, value)}
+                />
+            ))
+        )
+    ), [selectedParams, updateSearchParams]);
 
     return (
         <OutlineWrapper>
-            <StyledTable>
+            <StyledTable role="grid" aria-labelledby="filter-table-title">
+                <caption id="filter-table-title" className="sr-only">강좌 필터 옵션</caption>
                 <tbody>
                 <tr>
                     <th className="fixed-width">유형</th>
-                    {renderToggleButtons(CATEGORY_LABELS, 'category')}
+                    <td>{renderToggleButtons(CATEGORY_LABELS, 'category')}</td>
                 </tr>
                 <tr>
                     <th className="fixed-width">진행방식</th>
-                    {renderToggleButtons(COURSE_TYPE_LABELS, 'courseType')}
+                    <td>{renderToggleButtons(COURSE_TYPE_LABELS, 'courseType')}</td>
                 </tr>
                 <tr>
                     <th className="fixed-width">언어</th>
-                    {renderToggleButtons(PROGRAMMING_LANGUAGE_LABELS, 'programmingLanguage')}
+                    <td>{renderToggleButtons(PROGRAMMING_LANGUAGE_LABELS, 'programmingLanguage')}</td>
                 </tr>
                 <tr>
                     <th className="fixed-width">분야</th>
-                    {renderToggleButtons(FIELD_LABELS, 'field')}
+                    <td>{renderToggleButtons(FIELD_LABELS, 'field')}</td>
                 </tr>
                 <tr>
                     <th className="fixed-width">난이도</th>
-                    {renderToggleButtons(LEVEL_LABELS, 'level')}
+                    <td>{renderToggleButtons(LEVEL_LABELS, 'level')}</td>
                 </tr>
                 <tr>
                     <th className="fixed-width">가격</th>
-                    {renderToggleButtons(PRICE_LABELS, 'price')}
+                    <td>{renderToggleButtons(PRICE_LABELS, 'price')}</td>
                 </tr>
                 </tbody>
             </StyledTable>

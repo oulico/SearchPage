@@ -5,6 +5,8 @@ import {useState} from 'react'
 import createCache from '@emotion/cache'
 import {useServerInsertedHTML} from 'next/navigation'
 import {ChakraProvider, extendTheme} from '@chakra-ui/react'
+import {QueryClientProvider} from "@tanstack/react-query";
+import {getQueryClient} from 'utils/get-query-client';
 
 // Emotion theme
 const emotionTheme = {
@@ -31,6 +33,7 @@ export default function Providers({children}: { children: React.ReactNode }) {
         cache.compat = true
         return cache
     })
+    const queryClient = getQueryClient();
 
     useServerInsertedHTML(() => (
         <style
@@ -42,12 +45,13 @@ export default function Providers({children}: { children: React.ReactNode }) {
     ))
 
     return (
-        <CacheProvider value={cache}>
-            <EmotionThemeProvider theme={emotionTheme}>
-                <ChakraProvider theme={chakraTheme}>
-                    {children}
-                </ChakraProvider>
-            </EmotionThemeProvider>
-        </CacheProvider>
+        <QueryClientProvider client={queryClient}>
+            <CacheProvider value={cache}>
+                <EmotionThemeProvider theme={emotionTheme}>
+                    <ChakraProvider theme={chakraTheme}>
+                        {children}
+                    </ChakraProvider>
+                </EmotionThemeProvider>
+            </CacheProvider></QueryClientProvider>
     )
 }

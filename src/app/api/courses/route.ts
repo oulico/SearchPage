@@ -1,17 +1,46 @@
 import {NextRequest, NextResponse} from 'next/server';
 import {z} from 'zod';
 
-// 1. 쿼리스트링에 들어갈 필터 조건의 Zod 스키마 선언
+// 태그 인터페이스 정의
+interface Tag {
+    id: number;
+    tag_type: number;
+    name: string;
+}
+
+// 코스 인터페이스 정의
+interface Course {
+    id: number;
+    title: string;
+    short_description: string;
+    taglist: string[];
+    image_file_url: string;
+    is_free: boolean;
+    tags: Tag[];
+}
+
+// BFF 코스 인터페이스 정의
+interface BffCourse {
+    id: number;
+    title: string;
+    short_description: string;
+    taglist: string[];
+    image_file_url: string;
+    is_free: boolean;
+    subtitle: string;
+}
+
+// 쿼리스트링에 들어갈 필터 조건의 Zod 스키마 선언
 const searchParamsSchema = z.object({
-    title: z.string().optional(), // title은 선택 사항
-    status: z.array(z.string()).optional(), // status는 문자열 배열로 받아올 수 있음
-    is_datetime_enrollable: z.string().optional(), // 문자열로 받음
-    sort_by: z.string().default('created_datetime.desc'), // 기본값을 설정
-    offset: z.string().default('0'), // 기본값을 설정
-    count: z.string().default('2'), // 기본값을 설정
+    title: z.string().optional(),
+    status: z.array(z.string()).optional(),
+    is_datetime_enrollable: z.string().optional(),
+    sort_by: z.string().default('created_datetime.desc'),
+    offset: z.string().default('0'),
+    count: z.string().default('2'),
 });
 
-// 2. 외부 API 호출 함수
+// 외부 API 호출 함수
 async function fetchCourses(filterConditions: any, sort_by: string, offset: number, count: number) {
     const apiUrl = `https://api-rest.elice.io/org/academy/course/list/?filter_conditions=${encodeURIComponent(JSON.stringify(filterConditions))}&sort_by=${sort_by}&offset=${offset}&count=${count}`;
 
@@ -21,39 +50,30 @@ async function fetchCourses(filterConditions: any, sort_by: string, offset: numb
     return data;
 }
 
-// 3. API 핸들러 구현
+// API 핸들러 구현
 export async function GET(req: NextRequest) {
-    // 쿼리스트링에서 searchParams 추출
-    console.log('hello')
     const {searchParams} = new URL(req.url);
 
-    // 1. zod로 쿼리스트링 파싱
-
-    console.log('hello2')
-    // console.log('queryParams', queryParams)
     // safeParse로 검증
-    const result = searchParamsSchema.safeParse(searchParams);
+    const result = searchParamsSchema.safeParse(Object.fromEntries(searchParams));
     if (!result.success) {
         return NextResponse.json({error: "Invalid query parameters"}, {status: 400});
     }
-    console.log('hello3')
 
-    // 2. 필터 조건 JSON 생성
+    // 필터 조건 JSON 생성
     const filterConditions = {
         "$and": [
-            result.data.title ? {"title": `%${result.data.title}%`} : {}, // title 키워드
-            result.data.status?.length ? {"$or": result.data.status.map((status) => ({status: parseInt(status, 10)}))} : {}, // status 필터
-            result.data.is_datetime_enrollable === 'true' ? {"is_datetime_enrollable": true} : {} // is_datetime_enrollable 필터
-        ].filter(Boolean), // 빈 객체 필터링
+            result.data.title ? {"title": `%${result.data.title}%`} : {},
+            result.data.status?.length ? {"$or": result.data.status.map((status) => ({status: parseInt(status, 10)}))} : {},
+            result.data.is_datetime_enrollable === 'true' ? {"is_datetime_enrollable": true} : {}
+        ].filter(Boolean),
     };
 
-    console.log('hello4')
     // 문자열에서 원래 자료형으로 변환
     const parsedOffset = parseInt(result.data.offset, 10);
     const parsedCount = parseInt(result.data.count, 10);
-    const parsedIsDatetimeEnrollable = result.data.is_datetime_enrollable === 'true';
 
-    // 3. 외부 API 요청
+    // 외부 API 요청
     try {
         const courses = await fetchCourses(
             filterConditions,
@@ -61,7 +81,25 @@ export async function GET(req: NextRequest) {
             parsedOffset,
             parsedCount
         );
-        return NextResponse.json({courses}, {status: 200});
+
+        if (courses._result.status !== "ok") {
+            return NextResponse.json({error: "Failed to fetch data from external API"}, {status: 500});
+        }
+
+        const bffCourses: BffCourse[] = courses.courses.map((course: Course) => ({
+            id: course.id,
+            title: course.title,
+            short_description: course.short_description,
+            taglist: course.taglist,
+            image_file_url: course.image_file_url,
+            is_free: course.is_free,
+            subtitle: course.tags
+                .filter((tag: Tag) => tag.tag_type === 3)
+                .map((tag: Tag) => tag.name)
+                .join(', '),
+        }));
+
+        return NextResponse.json({bffCourses}, {status: 200});
     } catch (error) {
         return NextResponse.json({error: "Failed to fetch data from external API"}, {status: 500});
     }
