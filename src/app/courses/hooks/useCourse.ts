@@ -1,42 +1,14 @@
 'use client'
-import {useQuery, QueryClient, QueryFunctionContext} from '@tanstack/react-query';
+import {useQuery, QueryClient} from '@tanstack/react-query';
 import {getBaseURL} from 'utils/getBaseURL';
 import {BffCourseList} from "app/api/courses/route";
-import {usePathname, useSearchParams} from 'next/navigation';
+import {QueryParams} from "constants/queryParams";
 
-interface UseCourseParams {
-    page: number;
-    pageSize?: number;
-}
 
-interface CourseQueryParams {
-    title?: string;
-    status?: string[];
-    is_datetime_enrollable?: boolean;
-    sort_by?: string;
-    page: number;
-    pageSize: number;
-}
+export const fetchCourses = async (queryParams: QueryParams): Promise<BffCourseList> => {
 
-const DEFAULT_PAGE_SIZE = 20;
-
-export const fetchCourses = async ({
-                                       title,
-                                       status,
-                                       is_datetime_enrollable,
-                                       sort_by,
-                                       page,
-                                       pageSize,
-                                   }: CourseQueryParams): Promise<BffCourseList> => {
-    const searchParams = new URLSearchParams({
-        page: page.toString(),
-        pageSize: pageSize.toString(),
-    });
-
-    if (title) searchParams.append('title', title);
-    if (status) status.forEach(s => searchParams.append('status', s));
-    if (is_datetime_enrollable !== undefined) searchParams.append('is_datetime_enrollable', is_datetime_enrollable.toString());
-    if (sort_by) searchParams.append('sort_by', sort_by);
+    //객체를 쿼리스트링으로 변환
+    const searchParams = new URLSearchParams();
 
     const url = `${getBaseURL()}/api/courses?${searchParams.toString()}`;
 
@@ -54,30 +26,32 @@ export const fetchCourses = async ({
     return await response.json();
 };
 
-export const useCourse = ({page, pageSize = DEFAULT_PAGE_SIZE}: UseCourseParams) => {
-    const searchParams = useSearchParams();
-    const pathname = usePathname();
-    const queryParams: CourseQueryParams = {
-        title: searchParams.get('title') || undefined,
-        status: searchParams.getAll('status'),
-        is_datetime_enrollable: searchParams.get('is_datetime_enrollable') === 'true' || undefined,
-        sort_by: searchParams.get('sort_by') || undefined,
-        page,
-        pageSize,
-    };
+export const useCourse = (queryParams) => {
+    // 들어오는 값은 객체임. 이 객체를 그냥 전달하면 됨. 그런데 쿼리키를 객체로 하는게 좋을지?
+    // 이를테면 배열이니까 순서가 바뀌지 않는지?
+    // 그렇다면 항상 같은 순서로 sorting을 하자.
+    // 그리고 직렬화하자.
+
+    console.log('useCourse queryParams:', queryParams);
+    const sortedQueryParams = Object.fromEntries(Object.entries(queryParams).sort());
+    const stringifiedQueryParams = JSON.stringify(sortedQueryParams);
 
     return useQuery<BffCourseList, Error>({
-        queryKey: ['courses', pathname, queryParams],
+        queryKey: ['courses', stringifiedQueryParams],
         queryFn: () => fetchCourses(queryParams),
     });
 };
 
 export const prefetchCoursesData = async (
     queryClient: QueryClient,
-    queryParams: CourseQueryParams
+    queryParams: QueryParams
 ) => {
+
+    const sortedQueryParams = Object.fromEntries(Object.entries(queryParams).sort());
+    const stringifiedQueryParams = JSON.stringify(sortedQueryParams);
+
     await queryClient.prefetchQuery({
-        queryKey: ['courses', queryParams],
+        queryKey: ['courses', stringifiedQueryParams],
         queryFn: () => fetchCourses(queryParams),
     });
 };

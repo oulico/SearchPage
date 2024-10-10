@@ -11,12 +11,12 @@ interface CoursePageClientProps {
     initialPage: number;
 }
 
-export function CoursePageClient({dehydratedState, initialPage}: CoursePageClientProps) {
+export function CoursesPageClient({dehydratedState}: CoursePageClientProps) {
     return (
         <HydrationBoundary state={dehydratedState}>
             <SearchArea/>
             <Filter/>
-            <Courses initialPage={initialPage}/>
+            <Courses/>
         </HydrationBoundary>
     );
 }

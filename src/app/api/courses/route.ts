@@ -77,13 +77,18 @@ async function fetchCourses(filterConditions: any, sort_by: string, offset: numb
 export async function GET(req: NextRequest) {
     const {searchParams} = new URL(req.url);
 
+
+    // console.log('this is searchParams:', searchParams)
     // safeParse로 검증
     const result = searchParamsSchema.safeParse(Object.fromEntries(searchParams));
     if (!result.success) {
         return NextResponse.json({error: "Invalid query parameters"}, {status: 400});
     }
 
+
+    // console.log('this is result:', result)
     // 필터 조건 JSON 생성
+
     const filterConditions = {
         "$and": [
             result.data.title ? {"title": `%${result.data.title}%`} : {},
@@ -91,6 +96,8 @@ export async function GET(req: NextRequest) {
             result.data.is_datetime_enrollable === 'true' ? {"is_datetime_enrollable": true} : {}
         ].filter(Boolean),
     };
+
+    console.log('this is filter conditions:', filterConditions);
 
     // 문자열에서 원래 자료형으로 변환
     const parsedOffset = parseInt(result.data.offset, 10);

@@ -1,12 +1,9 @@
 'use client';
 
-import React, {useState} from 'react';
-import {useQuery} from '@tanstack/react-query';
 import {CourseCard} from "app/courses/components/ui/CourseCard";
-import {fetchCourses} from "app/courses/hooks/useCourse";
+import {useCourse} from "app/courses/hooks/useCourse";
 import styled from "@emotion/styled";
-import {BffCourseList} from "app/api/courses/route";
-import {useSearchParams, useRouter} from 'next/navigation';
+import {useQueryParam, ArrayParam, withDefault, StringParam, useQueryParams, NumberParam} from "use-query-params";
 
 const CardWrapper = styled.div`
     display: grid;
@@ -14,37 +11,55 @@ const CardWrapper = styled.div`
     gap: 1rem;
 `;
 
-interface CoursesProps {
-    initialPage: number;
-}
 
-export const Courses: React.FC<CoursesProps> = ({initialPage}) => {
-    const [page, setPage] = useState(initialPage);
-    const searchParams = useSearchParams();
-    const router = useRouter();
+const MyFiltersParam = withDefault(ArrayParam, [])
 
-    const queryParams = {
-        title: searchParams.get('title') || undefined,
-        status: searchParams.getAll('status'),
-        is_datetime_enrollable: searchParams.get('is_datetime_enrollable') === 'true',
-        sort_by: searchParams.get('sort_by') || undefined,
-        page,
-        pageSize: 20,
-    };
+export const Courses = () => {
 
-    const {data, isLoading, isError, error} = useQuery<BffCourseList, Error>({
-        queryKey: ['courses', queryParams],
-        queryFn: () => fetchCourses(queryParams),
+    //export type QueryParams = {
+    //     category?: Category | Category[]  // 단일 문자열 또는 문자열 배열
+    //     courseType?: CourseType | CourseType[]
+    //     field?: Field | Field[]
+    //     level?: Level | Level[]
+    //     programmingLanguage?: ProgrammingLanguage | ProgrammingLanguage[]
+    //     price?: Price | Price[]
+    //     tab?: Tab
+    //     page?: string
+    //     pageSize?: string
+    // };
+
+    // todo: 여기서 상태가 변화하면, 그대로 TanstackQuery의 쿼리를 실행하도록 하기.
+    const [query, setQuery] = useQueryParams({
+        category: MyFiltersParam,
+        courseType: MyFiltersParam,
+        field: MyFiltersParam,
+        level: MyFiltersParam,
+        programmingLanguage: MyFiltersParam,
+        price: MyFiltersParam,
+        tab: StringParam,
+        page: NumberParam,
+        pageSize: NumberParam
     });
 
-    const handlePageChange = (newPage: number) => {
-        setPage(newPage);
-        const current = new URLSearchParams(Array.from(searchParams.entries()));
-        current.set('page', newPage.toString());
-        const search = current.toString();
-        const query = search ? `?${search}` : "";
-        router.push(`${window.location.pathname}${query}`);
-    };
+
+    const {data, isLoading, isError} = useCourse(query)
+
+    // const {
+    //     category,
+    //     courseType,
+    //     field,
+    //     level,
+    //     programmingLanguage,
+    //     price,
+    //     tab,
+    //     page,
+    //     pageSize
+    // } = query;
+    console.log('query from Courses.tsx', query)
+    console.log('data from Courses.tsx', data)
+
+    // const {data, isLoading, isError, error} = useCourse(query)
+    // 렌더링이 2번 됨. 서버사이드에서 렌더링 되는듯
 
     if (isLoading) return <LoadingFallback/>;
     if (isError) return <ErrorFallback error={error} reset={() => router.refresh()}/>;
@@ -57,11 +72,11 @@ export const Courses: React.FC<CoursesProps> = ({initialPage}) => {
                     <CourseCard key={course.title} course={course}/>
                 ))}
             </CardWrapper>
-            <Pagination
-                currentPage={page}
-                totalPages={data.courseCount || 1}
-                onPageChange={handlePageChange}
-            />
+            {/*<Pagination*/}
+            {/*    currentPage={queryParams.page || 1}*/}
+            {/*    totalPages={data.courseCount || 1}*/}
+            {/*    // onPageChange={handlePageChange}*/}
+            {/*/>*/}
         </>
     );
 };
