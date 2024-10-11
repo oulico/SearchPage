@@ -11,5 +11,4 @@ export const getBaseURL = () => {
     } else if (isProd()) {
         return `https://${HOST}`
     }
-
 }
