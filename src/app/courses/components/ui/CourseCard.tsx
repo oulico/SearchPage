@@ -1,0 +1,44 @@
+'use client'
+import {OutlineWrapper} from "@/app/courses/components/ui/Outliner";
+import {Text, Card, CardBody, CardFooter, Stack, Heading, Box} from '@chakra-ui/react'
+import {Img} from '@chakra-ui/react'
+import {BffCourse} from "app/api/courses/route";
+
+export const CourseCard = ({course}: { course: BffCourse }) => {
+    const imageUrl = course.imageFileUrl || course.logoFileUrl;
+    const isLogoImage = !course.imageFileUrl && course.logoFileUrl;
+
+    // Placeholder 이미지 URL
+    const placeholderImageUrl = "https://placehold.co/600x400/png?text=No+Image";
+
+    return (
+        <Card maxW='sm' height={'100%'}>
+            <CardBody>
+                <Box
+                    width={isLogoImage ? '50%' : '100%'}
+                    margin={isLogoImage ? 'auto' : '0'}
+                >
+                    <Img
+                        src={imageUrl || placeholderImageUrl}
+                        alt={course.title}
+                        borderRadius='lg'
+                        objectFit="cover"
+                        width="100%"
+                        height={isLogoImage ? "auto" : "200px"}
+                    />
+                </Box>
+                <Stack mt='6' spacing='3'>
+                    <Heading size='md'>{course.title}</Heading>
+                    <Text>
+                        {course.shortDescription}
+                    </Text>
+                </Stack>
+            </CardBody>
+            <CardFooter>
+                <Text>
+                    {course.discountedPrice === '0' ? '무료' : `${course.discountedPrice}원`}
+                </Text>
+            </CardFooter>
+        </Card>
+    );
+};
