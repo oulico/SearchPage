@@ -1,6 +1,5 @@
 'use client'
 import {useQuery, QueryClient} from '@tanstack/react-query';
-import {getBaseURL, testGetBaseUrl} from 'utils/getBaseURL';
 import {BffCourseList} from "app/api/courses/route";
 import {QueryParams} from "constants/queryParams";
 
@@ -11,14 +10,11 @@ export const getCourses = async ({queryParams, offset, count}: {
     count: number
 }): Promise<BffCourseList> => {
 
-    const baseURL = getBaseURL();
-    const searchParams = new URLSearchParams(queryParams);
+    //객체를 쿼리스트링으로 변환
+    const searchParams = new URLSearchParams(queryParams as Record<string, string>);
 
-    // offset과 count가 유효한 경우에만 추가
-    if (offset !== undefined) searchParams.append('offset', offset.toString());
-    if (count !== undefined) searchParams.append('count', count.toString());
+    const url = `/api/courses?${searchParams.toString()}&offset=${offset}&count=${count}`;
 
-    const url = `/api/courses?${searchParams.toString()}`;
     const response = await fetch(url, {
         credentials: 'include',
         headers: {
