@@ -1,6 +1,7 @@
 import {NextRequest, NextResponse} from 'next/server';
 import {generateFilterConditions} from './utils/generateFilterConditions';
 import {z} from 'zod';
+import {queryParamsSchema} from 'constants/queryParams'
 
 // 태그 인터페이스 정의
 interface Tag {
@@ -54,33 +55,13 @@ export interface BffCourse {
     isFree: boolean;
 }
 
-const NullableString = z.string()
-    .transform(s => s === 'undefined' ? undefined : s)
-    .optional();
 
-const NumberOrNumberArray = z.string()
-    .transform(str => {
-        if (str === 'undefined') return undefined;
-        if (str.includes(',')) {
-            return str.split(',').map(Number).filter(n => !isNaN(n));
-        }
-        const num = Number(str);
-        return isNaN(num) ? undefined : num;
-    })
-    .optional();
-
-const searchParamsSchema = z.object({
-    title: NullableString,
-    category: NumberOrNumberArray,
-    courseType: NumberOrNumberArray,
-    field: NumberOrNumberArray,
-    level: NumberOrNumberArray,
-    programmingLanguage: NumberOrNumberArray,
-    price: NumberOrNumberArray,
-    tab: NullableString,
-    offset: NumberOrNumberArray,
-    count: NumberOrNumberArray,
+// queryParamsSchema를 확장해서 offset과 count를 추가
+const searchParamsSchema = queryParamsSchema.extend({
+    offset: z.string().transform(s => s === 'undefined' ? undefined : Number(s)).optional(),
+    count: z.string().transform(s => s === 'undefined' ? undefined : Number(s)).optional(),
 });
+
 
 // 외부 API 호출 함수
 async function fetchCourses(filterConditions: string, offset = 0, count = 12) {
@@ -188,7 +169,7 @@ export async function GET(req: NextRequest) {
         };
 
         return NextResponse.json(bffCourses, {status: 200});
-    } catch (error) {
+    } catch {
         return NextResponse.json({error: "Failed to fetch data from external API"}, {status: 500});
     }
 }
