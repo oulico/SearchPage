@@ -9,6 +9,7 @@ const CardWrapper = styled.div`
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
     gap: 1rem;
+    padding-top: 3rem;
 `;
 
 
@@ -17,8 +18,8 @@ const MyFiltersParam = withDefault(ArrayParam, [])
 export const Courses = () => {
 
     //export type QueryParams = {
-    //     category?: Category | Category[]  // 단일 문자열 또는 문자열 배열
-    //     courseType?: CourseType | CourseType[]
+    //     format?: Category | Category[]  // 단일 문자열 또는 문자열 배열
+    //     format?: CourseType | CourseType[]
     //     field?: Field | Field[]
     //     level?: Level | Level[]
     //     programmingLanguage?: ProgrammingLanguage | ProgrammingLanguage[]
@@ -32,21 +33,25 @@ export const Courses = () => {
     const [query, setQuery] = useQueryParams({
         category: MyFiltersParam,
         courseType: MyFiltersParam,
-        field: MyFiltersParam,
         level: MyFiltersParam,
         programmingLanguage: MyFiltersParam,
         price: MyFiltersParam,
         tab: StringParam,
-        page: NumberParam,
-        pageSize: NumberParam
+        offset: NumberParam,
+        count: NumberParam,
+        // page: NumberParam,
+        // pageSize: NumberParam
     });
 
+    // query에서 offset, count를 빼서 넣어주기. 나머지는 filterConditions
+    const {offset, count, ...filterConditions} = query;
 
-    const {data, isLoading, isError} = useCourse(query)
+
+    const {data, isLoading, isError, error} = useCourse(filterConditions, offset, count)
 
     // const {
-    //     category,
-    //     courseType,
+    //     format,
+    //     format,
     //     field,
     //     level,
     //     programmingLanguage,
@@ -61,12 +66,18 @@ export const Courses = () => {
     // const {data, isLoading, isError, error} = useCourse(query)
     // 렌더링이 2번 됨. 서버사이드에서 렌더링 되는듯
 
+    // 처음에 프리페칭 안되고 있음.
+
+    // api로 제대로 값이 안들어가서음.
+
     if (isLoading) return <LoadingFallback/>;
     if (isError) return <ErrorFallback error={error} reset={() => router.refresh()}/>;
     if (!data || !data.courses) return null;
 
     return (
         <>
+            {console.log('data for now', data)}
+            {data.courseCount && <h2>{data.courseCount} courses</h2>}
             <CardWrapper>
                 {data.courses.map((course) => (
                     <CourseCard key={course.title} course={course}/>

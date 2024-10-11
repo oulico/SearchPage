@@ -1,4 +1,5 @@
 import {NextRequest, NextResponse} from 'next/server';
+import {generateFilterConditions} from './utils/generateFilterConditions';
 import {z} from 'zod';
 
 // 태그 인터페이스 정의
@@ -46,26 +47,45 @@ export interface BffCourse {
     isDiscounted: boolean;
     discountedPrice: string;
     discountedPriceUsd: string;
-    discountRate: null | any;
+    discountRate: null | unknown;
     price: string;
     priceUsd: string;
     enrollType: number;
     isFree: boolean;
 }
 
-// 쿼리스트링에 들어갈 필터 조건의 Zod 스키마 선언
+const NullableString = z.string()
+    .transform(s => s === 'undefined' ? undefined : s)
+    .optional();
+
+const NumberOrNumberArray = z.string()
+    .transform(str => {
+        if (str === 'undefined') return undefined;
+        if (str.includes(',')) {
+            return str.split(',').map(Number).filter(n => !isNaN(n));
+        }
+        const num = Number(str);
+        return isNaN(num) ? undefined : num;
+    })
+    .optional();
+
 const searchParamsSchema = z.object({
-    title: z.string().optional(),
-    status: z.array(z.string()).optional(),
-    is_datetime_enrollable: z.string().optional(),
-    sort_by: z.string().default('created_datetime.desc'),
-    offset: z.string().default('0'),
-    count: z.string().default('12'),
+    title: NullableString,
+    category: NumberOrNumberArray,
+    courseType: NumberOrNumberArray,
+    field: NumberOrNumberArray,
+    level: NumberOrNumberArray,
+    programmingLanguage: NumberOrNumberArray,
+    price: NumberOrNumberArray,
+    tab: NullableString,
+    offset: NumberOrNumberArray,
+    count: NumberOrNumberArray,
 });
 
 // 외부 API 호출 함수
-async function fetchCourses(filterConditions: any, sort_by: string, offset: number, count: number) {
-    const apiUrl = `https://api-rest.elice.io/org/academy/course/list/?filter_conditions=${encodeURIComponent(JSON.stringify(filterConditions))}&sort_by=${sort_by}&offset=${offset}&count=${count}`;
+async function fetchCourses(filterConditions: string, offset = 0, count = 12) {
+    const apiUrl = `https://api-rest.elice.io/org/academy/course/list/?filter_conditions=${encodeURIComponent(filterConditions)}&offset=${offset}&count=${count}`;
+    console.log('apiurl', apiUrl)
 
     const response = await fetch(apiUrl);
     const data = await response.json();
@@ -75,54 +95,79 @@ async function fetchCourses(filterConditions: any, sort_by: string, offset: numb
 
 // API 핸들러 구현
 export async function GET(req: NextRequest) {
-    const {searchParams} = new URL(req.url);
+    let searchParams = {};
+    searchParams = Object.fromEntries(req.nextUrl.searchParams);
+
+    console.log('this is nextUrl:', req.nextUrl)
+    console.log('this is searchParams:', searchParams)
 
 
-    // console.log('this is searchParams:', searchParams)
     // safeParse로 검증
-    const result = searchParamsSchema.safeParse(Object.fromEntries(searchParams));
-    if (!result.success) {
-        return NextResponse.json({error: "Invalid query parameters"}, {status: 400});
-    }
+    const result = searchParamsSchema.parse(searchParams);
+
+    // const filterConditions = generateFilterConditions(result);
+    // if (!result.success) {
+    //     return NextResponse.json({error: "Invalid query parameters"}, {status: 400});
+    // }
 
 
-    // console.log('this is result:', result)
+    console.log('this is result:', result)
+
+    //  이제 잘 들어옴
+    // this is result: {
+    //   format: [ 8, 7 ],
+    //   format: [ 2, 1 ],
+    //   field: [ 6, 8, 5, 4 ],
+    //   level: 12,
+    //   programmingLanguage: [
+    //     20, 22, 24, 25, 26,
+    //     28, 17, 18, 27
+    //   ],
+    //   price: 32,
+    //   tab: undefined,
+    //   page: undefined,
+    //   pageSize: undefined
+    // }
+
     // 필터 조건 JSON 생성
 
-    const filterConditions = {
-        "$and": [
-            result.data.title ? {"title": `%${result.data.title}%`} : {},
-            result.data.status?.length ? {"$or": result.data.status.map((status) => ({status: parseInt(status, 10)}))} : {},
-            result.data.is_datetime_enrollable === 'true' ? {"is_datetime_enrollable": true} : {}
-        ].filter(Boolean),
-    };
+    const filterConditions = generateFilterConditions(result);
+    console.log('conditions', filterConditions)
 
-    console.log('this is filter conditions:', filterConditions);
+    // const filterConditions = {
+    //     "$and": [
+    //         result.data.title ? {"title": `%${result.data.title}%`} : {},
+    //         result.data.status?.length ? {"$or": result.data.status.map((status) => ({status: parseInt(status, 10)}))} : {},
+    //         result.data.is_datetime_enrollable === 'true' ? {"is_datetime_enrollable": true} : {}
+    //     ].filter(Boolean),
+    // };
+    //
+    // console.log('this is filter conditions:', filterConditions);
+    // 여기서 ㅇ제대로 안들어옴.
 
     // 문자열에서 원래 자료형으로 변환
-    const parsedOffset = parseInt(result.data.offset, 10);
-    const parsedCount = parseInt(result.data.count, 10);
+    // const parsedOffset = parseInt(result.offset, 10);
+    // const parsedCount = parseInt(result.count, 10);
 
     // 외부 API 요청
     try {
         const courses = await fetchCourses(
             filterConditions,
-            result.data.sort_by,
-            parsedOffset,
-            parsedCount
         );
+
+        console.log('this is courses:', courses)
 
         if (courses._result.status !== "ok") {
             return NextResponse.json({error: "Failed to fetch data from external API"}, {status: 500});
         }
 
         const bffCourses: BffCourseList = {
-            courseCount: courses.courseCount,
+            courseCount: courses.course_count,
             courses: courses.courses.map((course: Course) => ({
-                courseType: course.course_type,  // 스네이크 케이스 -> 카멜 케이스로 변환
-                tags: course.tags.map(tag => tag.name),  // 태그 이름만 리스트로 추출
+                courseType: course.course_type,
+                tags: course.tags.map(tag => tag.name),
                 title: course.title,
-                shortDescription: course.short_description,  // 카멜 케이스로 맞춤
+                shortDescription: course.short_description,
                 classType: course.class_type,
                 imageFileUrl: course.image_file_url,
                 logoFileUrl: course.logo_file_url,
@@ -133,7 +178,7 @@ export async function GET(req: NextRequest) {
                 endDatetime: course.end_datetime,
                 isDiscounted: course.is_discounted,
                 discountedPrice: course.discounted_price,
-                discountedPriceUsd: course.discounted_price_usd,  // 여기서도 스네이크 케이스에 맞춤
+                discountedPriceUsd: course.discounted_price_usd,
                 discountRate: course.discount_rate,
                 price: course.price,
                 priceUsd: course.price_usd,

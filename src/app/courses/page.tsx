@@ -1,6 +1,6 @@
 import {dehydrate} from '@tanstack/react-query';
 import {getQueryClient} from "utils/get-query-client";
-import {fetchCourses} from "app/courses/hooks/useCourse";
+import {getCourses} from "app/courses/hooks/useCourse";
 import {CoursesPageClient} from "app/courses/components/pages/CoursesPageClient";
 import {QueryParams, queryParamsSchema} from "constants/queryParams";
 
@@ -21,7 +21,7 @@ export default async function CoursesPageServer({
 
     await queryClient.prefetchQuery({
         queryKey: ['courses', stringifiedQueryParams],
-        queryFn: () => fetchCourses(queryParams)
+        queryFn: () => getCourses(queryParams)
     });
 
     // return <CoursesPageClient dehydratedState={dehydrate(queryClient)} initialPage={page}/>;

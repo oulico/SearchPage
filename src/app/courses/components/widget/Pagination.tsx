@@ -3,7 +3,7 @@
 import {OutlineWrapper} from "@/app/courses/components/ui/Outliner";
 import {useCourse} from "app/courses/hooks/useCourse";
 
-const COUNT = 20;
+const COUNT = 12;
 
 export const Pagination = () => {
     const [currentPage, setCurrentPage] = useState(1);

@@ -5,7 +5,7 @@ import {useRouter, useSearchParams} from 'next/navigation';
 import {
     CATEGORIES,
     COURSE_TYPES,
-    FIELDS,
+    FORMATS,
     LEVELS,
     PRICES,
     PROGRAMMING_LANGUAGES
@@ -33,13 +33,13 @@ const StyledTable = styled.table`
     }
 `;
 
-type FilterKey = 'category' | 'courseType' | 'programmingLanguage' | 'field' | 'level' | 'price';
+type FilterKey = 'courseType' | 'format' | 'programmingLanguage' | 'category' | 'level' | 'price';
 
 export const Filter: React.FC = () => {
     const router = useRouter();
     const searchParams = useSearchParams();
 
-    const getSelectedParams = (key: FilterKey, labels: typeof CATEGORIES | typeof COURSE_TYPES | typeof PROGRAMMING_LANGUAGES | typeof FIELDS | typeof LEVELS | typeof PRICES) => {
+    const getSelectedParams = (key: FilterKey, labels: typeof COURSE_TYPES | typeof FORMATS | typeof PROGRAMMING_LANGUAGES | typeof FIELDS | typeof LEVELS | typeof PRICES) => {
         const selectedValues = searchParams.getAll(key);
         return Object.entries(labels).reduce((acc, [enumKey, id]) => {
             acc[enumKey] = selectedValues.includes(id) ? id : '';
@@ -64,7 +64,7 @@ export const Filter: React.FC = () => {
         router.push(`?${newSearchParams.toString()}`, {scroll: false});
     };
 
-    const renderToggleButtons = (labels: typeof CATEGORIES | typeof COURSE_TYPES | typeof PROGRAMMING_LANGUAGES | typeof FIELDS | typeof LEVELS | typeof PRICES, key: FilterKey) => (
+    const renderToggleButtons = (labels: typeof COURSE_TYPES | typeof FORMATS | typeof PROGRAMMING_LANGUAGES | typeof CATEGORIES | typeof LEVELS | typeof PRICES, key: FilterKey) => (
         Object.entries(labels).map(([enumKey, id]) => (
             <ToggleButton
                 key={id}
@@ -82,11 +82,11 @@ export const Filter: React.FC = () => {
                 <tbody>
                 <tr>
                     <th className="fixed-width">유형</th>
-                    <td>{renderToggleButtons(CATEGORIES, 'category')}</td>
+                    <td>{renderToggleButtons(COURSE_TYPES, 'format')}</td>
                 </tr>
                 <tr>
                     <th className="fixed-width">진행방식</th>
-                    <td>{renderToggleButtons(COURSE_TYPES, 'courseType')}</td>
+                    <td>{renderToggleButtons(FORMATS, 'format')}</td>
                 </tr>
                 <tr>
                     <th className="fixed-width">언어</th>
@@ -94,7 +94,7 @@ export const Filter: React.FC = () => {
                 </tr>
                 <tr>
                     <th className="fixed-width">분야</th>
-                    <td>{renderToggleButtons(FIELDS, 'field')}</td>
+                    <td>{renderToggleButtons(CATEGORIES, 'category')}</td>
                 </tr>
                 <tr>
                     <th className="fixed-width">난이도</th>

@@ -1,17 +1,17 @@
 import {z} from 'zod';
 
-export const CATEGORIES = {
+export const COURSE_TYPES = {
     SUBJECT: '6',
     CHALLENGE: '7',
     TEST: '8',
 } as const;
 
-export const COURSE_TYPES = {
+export const FORMATS = {
     FREE_CHOICE: '1',
     SEQUENTIAL: '2',
 } as const;
 
-export const FIELDS = {
+export const CATEGORIES = {
     PROGRAMMING_BASICS: '4',
     DATA_ANALYSIS: '5',
     WEB: '6',
@@ -50,41 +50,48 @@ export const PRICES = {
     CREDIT: '32',
 } as const;
 
-export const TABS = {
-    COURSE: 'course',
-} as const;
+// 역방향 매핑을 위한 유틸리티 함수
+function invertObject<T extends Record<string, string>>(obj: T) {
+    return Object.fromEntries(
+        Object.entries(obj).map(([key, value]) => [value, key])
+    ) as { [K in keyof T as T[K]]: K };
+}
 
-// 타입 정의
-type Category = typeof CATEGORIES[keyof typeof CATEGORIES];
-type CourseType = typeof COURSE_TYPES[keyof typeof COURSE_TYPES];
-type Field = typeof FIELDS[keyof typeof FIELDS];
-type Level = typeof LEVELS[keyof typeof LEVELS];
-type ProgrammingLanguage = typeof PROGRAMMING_LANGUAGES[keyof typeof PROGRAMMING_LANGUAGES];
-type Price = typeof PRICES[keyof typeof PRICES];
-type Tab = typeof TABS[keyof typeof TABS];
+// 역방향 매핑 객체 생성
+export const CATEGORIES_INVERSE = invertObject(COURSE_TYPES);
+export const COURSE_TYPES_INVERSE = invertObject(FORMATS);
+export const FIELDS_INVERSE = invertObject(CATEGORIES);
+export const LEVELS_INVERSE = invertObject(LEVELS);
+export const PROGRAMMING_LANGUAGES_INVERSE = invertObject(PROGRAMMING_LANGUAGES);
+export const PRICES_INVERSE = invertObject(PRICES);
+
+// 유니온 타입 정의
+export type CourseType = typeof COURSE_TYPES[keyof typeof COURSE_TYPES];
+export type Format = typeof FORMATS[keyof typeof FORMATS];
+export type Category = typeof CATEGORIES[keyof typeof CATEGORIES];
+export type Level = typeof LEVELS[keyof typeof LEVELS];
+export type ProgrammingLanguage = typeof PROGRAMMING_LANGUAGES[keyof typeof PROGRAMMING_LANGUAGES];
+export type Price = typeof PRICES[keyof typeof PRICES];
 
 // QueryParams 타입 정의
+
 export type QueryParams = {
-    category?: Category | Category[]
     courseType?: CourseType | CourseType[]
-    field?: Field | Field[]
+    format?: Format | Format[]
+    category?: Category | Category[]
     level?: Level | Level[]
     programmingLanguage?: ProgrammingLanguage | ProgrammingLanguage[]
     price?: Price | Price[]
-    tab?: Tab
-    page?: string
-    pageSize?: string
+    tab?: string
 };
 
-// Zod 스키마 정의
+
 export const queryParamsSchema = z.object({
-    category: z.enum(Object.values(CATEGORIES) as [Category]).optional().or(z.array(z.enum(Object.values(CATEGORIES) as [Category]))),
-    courseType: z.enum(Object.values(COURSE_TYPES) as [CourseType]).optional().or(z.array(z.enum(Object.values(COURSE_TYPES) as [CourseType]))),
-    field: z.enum(Object.values(FIELDS) as [Field]).optional().or(z.array(z.enum(Object.values(FIELDS) as [Field]))),
-    level: z.enum(Object.values(LEVELS) as [Level]).optional().or(z.array(z.enum(Object.values(LEVELS) as [Level]))),
-    programmingLanguage: z.enum(Object.values(PROGRAMMING_LANGUAGES) as [ProgrammingLanguage]).optional().or(z.array(z.enum(Object.values(PROGRAMMING_LANGUAGES) as [ProgrammingLanguage]))),
-    price: z.enum(Object.values(PRICES) as [Price]).optional().or(z.array(z.enum(Object.values(PRICES) as [Price]))),
-    tab: z.enum(Object.values(TABS) as [Tab]).optional(),
-    page: z.string().optional(),
-    pageSize: z.string().optional(),
+    courseType: z.string().or(z.array(z.string())).optional(),
+    format: z.string().or(z.array(z.string())).optional(),
+    category: z.string().or(z.array(z.string())).optional(),
+    level: z.string().or(z.array(z.string())).optional(),
+    programmingLanguage: z.string().or(z.array(z.string())).optional(),
+    price: z.string().or(z.array(z.string())).optional(),
+    tab: z.string().optional(),
 });

@@ -5,12 +5,12 @@ import {BffCourseList} from "app/api/courses/route";
 import {QueryParams} from "constants/queryParams";
 
 
-export const fetchCourses = async (queryParams: QueryParams): Promise<BffCourseList> => {
+export const getCourses = async ({queryParams, offset, count}): Promise<BffCourseList> => {
 
     //객체를 쿼리스트링으로 변환
-    const searchParams = new URLSearchParams();
+    const searchParams = new URLSearchParams(queryParams);
 
-    const url = `${getBaseURL()}/api/courses?${searchParams.toString()}`;
+    const url = `${getBaseURL()}/api/courses?${searchParams.toString()}&offset=${offset}&count=${count}`;
 
     const response = await fetch(url, {
         credentials: 'include',
@@ -26,19 +26,19 @@ export const fetchCourses = async (queryParams: QueryParams): Promise<BffCourseL
     return await response.json();
 };
 
-export const useCourse = (queryParams) => {
+export const useCourse = (queryParams, offset, count) => {
     // 들어오는 값은 객체임. 이 객체를 그냥 전달하면 됨. 그런데 쿼리키를 객체로 하는게 좋을지?
     // 이를테면 배열이니까 순서가 바뀌지 않는지?
     // 그렇다면 항상 같은 순서로 sorting을 하자.
     // 그리고 직렬화하자.
 
-    console.log('useCourse queryParams:', queryParams);
+    console.log('useCourse queryParams:', queryParams, offset, count);
     const sortedQueryParams = Object.fromEntries(Object.entries(queryParams).sort());
     const stringifiedQueryParams = JSON.stringify(sortedQueryParams);
 
     return useQuery<BffCourseList, Error>({
         queryKey: ['courses', stringifiedQueryParams],
-        queryFn: () => fetchCourses(queryParams),
+        queryFn: () => getCourses({queryParams, offset, count}),
     });
 };
 
@@ -52,6 +52,6 @@ export const prefetchCoursesData = async (
 
     await queryClient.prefetchQuery({
         queryKey: ['courses', stringifiedQueryParams],
-        queryFn: () => fetchCourses(queryParams),
+        queryFn: () => getCourses({queryParams, offset: 0, count: 20}),
     });
 };
