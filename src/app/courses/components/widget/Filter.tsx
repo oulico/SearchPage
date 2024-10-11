@@ -12,6 +12,7 @@ import {
 } from "constants/queryParams";
 import {OutlineWrapper} from "app/courses/components/ui/Outliner";
 import {ToggleButton} from "app/courses/components/ui/ToggleButton";
+import AsyncBoundary from "components/AsyncBoundary"; // AsyncBoundary 추가
 import styled from "@emotion/styled";
 
 const StyledTable = styled.table`
@@ -35,11 +36,27 @@ const StyledTable = styled.table`
 
 type FilterKey = 'courseType' | 'format' | 'programmingLanguage' | 'category' | 'level' | 'price';
 
-export const Filter: React.FC = () => {
+// 검색 결과를 로드할 때 보여줄 컴포넌트
+const LoadingFallback: React.FC = () => {
+    return <div>Loading filter...</div>;
+};
+
+// 에러 발생 시 보여줄 컴포넌트
+const ErrorFallback: React.FC<{ reset: () => void }> = ({reset}) => {
+    return (
+        <div>
+            <p>Error loading filters. Please try again later.</p>
+            <button onClick={reset}>Try again</button>
+        </div>
+    );
+};
+
+
+const Resolved: React.FC = () => {
     const router = useRouter();
     const searchParams = useSearchParams();
 
-    const getSelectedParams = (key: FilterKey, labels: typeof COURSE_TYPES | typeof FORMATS | typeof PROGRAMMING_LANGUAGES | typeof FIELDS | typeof LEVELS | typeof PRICES) => {
+    const getSelectedParams = (key: FilterKey, labels: typeof COURSE_TYPES | typeof FORMATS | typeof PROGRAMMING_LANGUAGES | typeof CATEGORIES | typeof LEVELS | typeof PRICES) => {
         const selectedValues = searchParams.getAll(key);
         return Object.entries(labels).reduce((acc, [enumKey, id]) => {
             acc[enumKey] = selectedValues.includes(id) ? id : '';
@@ -107,5 +124,16 @@ export const Filter: React.FC = () => {
                 </tbody>
             </StyledTable>
         </OutlineWrapper>
+    );
+};
+
+// AsyncBoundary로 감싸서 에러와 로딩 처리
+export const FilterWithSuspense: React.FC = () => {
+    const router = useRouter();
+
+    return (
+        <AsyncBoundary pending={<LoadingFallback/>} rejected={() => <ErrorFallback reset={() => router.refresh()}/>}>
+            <Resolved/>
+        </AsyncBoundary>
     );
 };

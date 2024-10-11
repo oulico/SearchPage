@@ -1,5 +1,6 @@
 {
   "compilerOptions": {
+    "baseUrl": ".",
     "lib": [
       "dom",
       "dom.iterable",
@@ -15,8 +16,8 @@
     "resolveJsonModule": true,
     "isolatedModules": true,
     "types": [
-      "jest",
-      "@testing-library/jest-dom",
+      //      "jest",
+      //      "@testing-library/jest-dom",
       "node"
     ],
     "typeRoots": [

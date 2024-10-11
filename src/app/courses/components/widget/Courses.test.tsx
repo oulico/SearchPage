@@ -1,6 +1,6 @@
 import React from 'react';
 import {render, screen, waitFor} from '@testing-library/react';
-import {Courses} from './Courses';
+import {CoursesWithSuspense} from './CoursesWithSuspense';
 import {useCourse} from 'app/courses/hooks/useCourse';
 
 // Mock the useCourse hook
@@ -8,14 +8,14 @@ jest.mock('app/courses/hooks/useCourse');
 
 const mockedUseCourse = useCourse as jest.MockedFunction<typeof useCourse>;
 
-describe('Courses Component', () => {
+describe('CoursesWithSuspense Component', () => {
     it('renders loading state', () => {
         mockedUseCourse.mockImplementation(() => {
             throw new Promise(() => {
             }); // This will cause the component to show the loading state
         });
 
-        render(<Courses/>);
+        render(<CoursesWithSuspense/>);
         expect(screen.getByText('Loading courses...')).toBeInTheDocument();
     });
 
@@ -27,7 +27,7 @@ describe('Courses Component', () => {
 
         mockedUseCourse.mockReturnValue({courses: mockCourses});
 
-        render(<Courses/>);
+        render(<CoursesWithSuspense/>);
 
         await waitFor(() => {
             expect(screen.getByText('React Basics')).toBeInTheDocument();
@@ -40,7 +40,7 @@ describe('Courses Component', () => {
             throw new Error('Failed to load courses');
         });
 
-        render(<Courses/>);
+        render(<CoursesWithSuspense/>);
 
         await waitFor(() => {
             expect(screen.getByText('Error loading courses: Failed to load courses')).toBeInTheDocument();

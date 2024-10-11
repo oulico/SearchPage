@@ -1,5 +1,4 @@
 'use client'
-import {OutlineWrapper} from "@/app/courses/components/ui/Outliner";
 import {Text, Card, CardBody, CardFooter, Stack, Heading, Box} from '@chakra-ui/react'
 import {Img} from '@chakra-ui/react'
 import {BffCourse} from "app/api/courses/route";
