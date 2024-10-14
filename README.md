@@ -17,7 +17,7 @@ https://elice-searchpage-clone-v1.vercel.app/courses
 - **상태 관리**: TanStack Query, React Hooks
 - **스타일링**: emotion, Chakra UI
 - **데이터 검증**: Zod
-- **기타**: React, Temporal.js
+- **기타**: Temporal.js
 
 ## 주요 구현 사항
 
@@ -40,13 +40,25 @@ https://elice-searchpage-clone-v1.vercel.app/courses
 5. **성능 최적화 (진행 중)**
    - TanStack Query를 활용한 데이터 프리페칭 전략 수립 (구현 예정)
 
-## 코딩 원칙
+## 코딩 원칙 및 아키텍처 패턴
 
 - **Colocation**: 관련된 코드를 가까이 배치하여 유지보수성 향상
+  - 컴포넌트와 관련 스타일, 로직, 타입을 같은 디렉토리에 위치
+  - 페이지별로 관련 컴포넌트와 로직을 그룹화
 - **타입 안전성**: TypeScript와 Zod를 통한 엄격한 타입 체크
-- **모듈화**: 재사용 가능한 컴포넌트와 훅 설계
-- **선언적 프로그래밍**: AsyncBoundary 등을 활용한 명확한 비동기 처리
-- **확장성**: feature flag 등을 고려한 유연한 구조 설계
+  - API 응답, 상태, props 등 모든 데이터 흐름에 타입 적용
+- **모듈화 및 재사용성**:
+  - 재사용 가능한 컴포넌트와 훅 설계
+  - 비즈니스 로직을 커스텀 훅으로 분리하여 재사용성 증대
+- **선언적 프로그래밍**: 
+  - AsyncBoundary 등을 활용한 명확한 비동기 처리
+  - 복잡한 조건부 렌더링을 컴포넌트로 추상화
+- **확장성**: 
+  - feature flag를 고려한 유연한 구조 설계
+  - 필터 조건을 상수로 분리하여 쉬운 확장 가능
+- **관심사 분리**:
+  - 데이터 fetching 로직을 API 레이어로 분리
+  - UI 컴포넌트와 비즈니스 로직 분리
 
 ## 현재 진행 상황
 
