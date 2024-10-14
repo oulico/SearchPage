@@ -14,7 +14,8 @@ export const ToggleButton = ({label, isSelected, onToggle}: {
         <Tag
             size="lg"
             variant="solid"
-            colorScheme={isSelected ? "blue" : "gray"}
+            colorScheme={isSelected ? "primary" : "gray"}
+            borderRadius={'full'}
             onClick={onToggle}
             cursor="pointer"
         >
