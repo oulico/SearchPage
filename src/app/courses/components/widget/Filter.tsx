@@ -10,31 +10,39 @@ import {
     PRICES,
     PROGRAMMING_LANGUAGES
 } from "constants/queryParams";
-import {OutlineWrapper} from "app/courses/components/ui/Outliner";
+
 import {ToggleButton} from "app/courses/components/ui/ToggleButton";
 import AsyncBoundary from "components/AsyncBoundary"; // AsyncBoundary 추가
 import styled from "@emotion/styled";
-
-const StyledTable = styled.table`
-    width: 100%;
-    border-collapse: collapse;
-
-    th, td {
-        border: 1px solid #ccc;
-        padding: 8px;
-        text-align: left;
-    }
-
-    th {
-        background-color: #f0f0f0;
-    }
-
-    .fixed-width {
-        width: 100px;
-    }
-`;
+import {colors} from 'constants/styleScheme'
 
 type FilterKey = 'courseType' | 'format' | 'programmingLanguage' | 'category' | 'level' | 'price';
+
+const FilterWrapper = styled.div({
+    paddingTop: '12px',
+});
+const FilterTable = styled.table({
+    width: '100%',
+    borderCollapse: 'collapse',
+    paddingTop: '12px',
+    paddingBottom: '12px',
+    th: {
+        backgroundColor: colors.gray[100],
+        width: '100px',
+    },
+    'th, td': {
+        border: '1px solid',
+        borderCollapse: 'collapse',
+        borderColor: colors.gray[200],
+        padding: '8px',
+        textAlign: 'left',
+    },
+});
+const TD = styled.td({
+    display: 'flex',
+    flexWrap: 'wrap',
+    gap: '4px',
+});
 
 // 검색 결과를 로드할 때 보여줄 컴포넌트
 const LoadingFallback: React.FC = () => {
@@ -93,37 +101,37 @@ const Resolved: React.FC = () => {
     );
 
     return (
-        <OutlineWrapper>
-            <StyledTable role="grid" aria-labelledby="filter-table-title">
-                <caption id="filter-table-title" className="sr-only">강좌 필터 옵션</caption>
+        <FilterWrapper>
+            <FilterTable role="grid" aria-labelledby="filter-table-title">
+                {/*<caption id="filter-table-title" className="sr-only">강좌 필터 옵션</caption>*/}
                 <tbody>
                 <tr>
                     <th className="fixed-width">유형</th>
-                    <td>{renderToggleButtons(COURSE_TYPES, 'format')}</td>
+                    <TD>{renderToggleButtons(COURSE_TYPES, 'format')}</TD>
                 </tr>
                 <tr>
                     <th className="fixed-width">진행방식</th>
-                    <td>{renderToggleButtons(FORMATS, 'format')}</td>
+                    <TD>{renderToggleButtons(FORMATS, 'format')}</TD>
                 </tr>
                 <tr>
                     <th className="fixed-width">언어</th>
-                    <td>{renderToggleButtons(PROGRAMMING_LANGUAGES, 'programmingLanguage')}</td>
+                    <TD>{renderToggleButtons(PROGRAMMING_LANGUAGES, 'programmingLanguage')}</TD>
                 </tr>
                 <tr>
                     <th className="fixed-width">분야</th>
-                    <td>{renderToggleButtons(CATEGORIES, 'category')}</td>
+                    <TD>{renderToggleButtons(CATEGORIES, 'category')}</TD>
                 </tr>
                 <tr>
                     <th className="fixed-width">난이도</th>
-                    <td>{renderToggleButtons(LEVELS, 'level')}</td>
+                    <TD>{renderToggleButtons(LEVELS, 'level')}</TD>
                 </tr>
                 <tr>
                     <th className="fixed-width">가격</th>
-                    <td>{renderToggleButtons(PRICES, 'price')}</td>
+                    <TD>{renderToggleButtons(PRICES, 'price')}</TD>
                 </tr>
                 </tbody>
-            </StyledTable>
-        </OutlineWrapper>
+            </FilterTable>
+        </FilterWrapper>
     );
 };
 
