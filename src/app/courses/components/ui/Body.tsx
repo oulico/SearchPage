@@ -1,7 +1,6 @@
 'use client'
 //테스트로 만들어본 것임.
 import React, {ReactNode} from 'react';
-import {OutlineWrapper} from "@/app/courses/components/ui/Outliner";
 import styled from "@emotion/styled";
 import {useMedia} from "react-use";
 

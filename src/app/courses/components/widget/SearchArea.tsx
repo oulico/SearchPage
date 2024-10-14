@@ -2,7 +2,6 @@
 
 import React from 'react';
 import {useRouter, useSearchParams} from 'next/navigation';
-import {OutlineWrapper} from "@/app/courses/components/ui/Outliner";
 import {SearchIcon} from "@/app/courses/components/icons/SearchIcon";
 import {Input, InputGroup, InputLeftElement} from "@chakra-ui/react";
 import AsyncBoundary from "components/AsyncBoundary"; // AsyncBoundary 추가
