@@ -1,5 +1,7 @@
 # 앨리스 과정검색 페이지 클론
 
+https://elice-searchpage-clone-v1.vercel.app/courses
+
 이 프로젝트는 [앨리스 아카데미](https://academy.elice.io)의 과정검색 페이지를 클론 코딩한 것입니다. 실제 운영 중인 서비스의 API를 활용하여 프론트엔드 개발 실무 역량을 강화하는 것을 목표로 합니다.
 
 ## 주요 기능
