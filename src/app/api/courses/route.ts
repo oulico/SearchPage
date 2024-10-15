@@ -17,16 +17,6 @@ interface Course {
 }
 
 // BFF 코스 인터페이스 정의
-// export interface BffCourse {
-//     id: number;
-//     title: string;
-//     short_description: string;
-//     taglist: string[];
-//     image_file_url: string;
-//     is_free: boolean;
-//     subtitle: string;
-//     discounted_price: string;
-// }
 export interface BffCourseList {
     courseCount: number;
     courses: BffCourse[];
@@ -79,8 +69,8 @@ export async function GET(req: NextRequest) {
     let searchParams = {};
     searchParams = Object.fromEntries(req.nextUrl.searchParams);
 
-    console.log('this is nextUrl:', req.nextUrl)
-    console.log('this is searchParams:', searchParams)
+    // console.log('this is nextUrl:', req.nextUrl)
+    // console.log('this is searchParams:', searchParams)
 
 
     // safeParse로 검증
@@ -92,7 +82,7 @@ export async function GET(req: NextRequest) {
     // }
 
 
-    console.log('this is result:', result)
+    // console.log('this is result:', result)
 
     //  이제 잘 들어옴
     // this is result: {
@@ -136,7 +126,7 @@ export async function GET(req: NextRequest) {
             filterConditions,
         );
 
-        console.log('this is courses:', courses)
+        // console.log('this is courses:', courses)
 
         if (courses._result.status !== "ok") {
             return NextResponse.json({error: "Failed to fetch data from external API"}, {status: 500});

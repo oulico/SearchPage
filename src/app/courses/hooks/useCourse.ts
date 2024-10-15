@@ -36,7 +36,7 @@ export const useCourse = (queryParams: QueryParams, offset: number, count
     // 그렇다면 항상 같은 순서로 sorting을 하자.
     // 그리고 직렬화하자.
 
-    console.log('useCourse queryParams:', queryParams, offset, count);
+    console.log('!!!!!!useCourse queryParams:', queryParams, offset, count);
     const sortedQueryParams = Object.fromEntries(Object.entries(queryParams).sort());
     const stringifiedQueryParams = JSON.stringify(sortedQueryParams);
 

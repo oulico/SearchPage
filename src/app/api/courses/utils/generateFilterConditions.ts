@@ -1,41 +1,13 @@
-import {z} from 'zod';
-import {COURSE_TYPES, FORMATS, CATEGORIES, LEVELS, PROGRAMMING_LANGUAGES, PRICES} from 'constants/queryParams';
-import {FILTER_MAP} from "constants/filterMap";
+import {FILTER_OPTIONS} from 'constants/queryParams';
 
-const CourseTypeSchema = z.enum(Object.values(COURSE_TYPES) as [string, ...string[]]);
-const FormatSchema = z.enum(Object.values(FORMATS) as [string, ...string[]]);
-const CategorySchema = z.enum(Object.values(CATEGORIES) as [string, ...string[]]);
-const LevelSchema = z.enum(Object.values(LEVELS) as [string, ...string[]]);
-const ProgrammingLanguageSchema = z.enum(Object.values(PROGRAMMING_LANGUAGES) as [string, ...string[]]);
-const PriceSchema = z.enum(Object.values(PRICES) as [string, ...string[]]);
-
-export const queryParamsSchema = z.object({
-    courseType: CourseTypeSchema.or(z.array(CourseTypeSchema)).optional(),
-    format: FormatSchema.or(z.array(FormatSchema)).optional(),
-    category: CategorySchema.or(z.array(CategorySchema)).optional(),
-    level: LevelSchema.or(z.array(LevelSchema)).optional(),
-    programmingLanguage: ProgrammingLanguageSchema.or(z.array(ProgrammingLanguageSchema)).optional(),
-    price: PriceSchema.or(z.array(PriceSchema)).optional(),
-    tab: z.string().optional(),
-    offset: z.number().optional(),
-    count: z.number().optional(),
-});
-export type QueryParams = z.infer<typeof queryParamsSchema>;
-
-// FILTER_MAP의 구조를 명시적으로 정의
-type FilterValue = {
-    query: Record<string, string>;
-    filter: Record<string, unknown> | Record<string, unknown>[];
+type FlexibleQueryParams = {
+    [K in keyof typeof FILTER_OPTIONS]?: string | string[] | null | undefined;
+} & {
+    keyword?: string;
+    tab?: string;
+    offset?: number;
+    count?: number;
 };
-
-type FilterMapType = {
-    [K in keyof QueryParams]?: {
-        [V: string]: FilterValue;
-    };
-};
-
-// FILTER_MAP이 FilterMapType을 따르는지 확인 (타입 단언 사용)
-const typedFilterMap = FILTER_MAP as FilterMapType;
 
 type Condition =
     | { title: string }
@@ -43,23 +15,38 @@ type Condition =
     | { is_datetime_enrollable: boolean }
     | Record<string, unknown>;
 
-function generateFilterConditions(params: QueryParams): string {
+function generateFilterConditions(params: FlexibleQueryParams): string {
+    console.log('params======', params);
     const conditions: Condition[] = [
-        {"title": "%%"},
         {"$or": [{"status": 2}, {"status": 3}, {"status": 4}]},
         {"is_datetime_enrollable": true}
     ];
 
-    function addCondition(paramKey: keyof FilterMapType) {
-        const param = params[paramKey];
-        const filterMapEntry = typedFilterMap[paramKey];
+    // keyword 처리 (문자열)
+    if (typeof params.keyword === 'string' && params.keyword !== 'null') {
+        conditions.push({"title": `%${decodeURIComponent(params.keyword)}%`});
+    } else {
+        conditions.push({"title": "%%"});
+    }
 
-        if (param && filterMapEntry) {
-            const values = Array.isArray(param) ? param : [param];
+    // tab 처리 (문자열)
+    if (typeof params.tab === 'string' && params.tab !== 'null') {
+        conditions.push({"tab": params.tab});
+    }
+
+    // offset과 count는 API 호출 시 사용될 것이므로 여기서는 처리하지 않습니다.
+
+    Object.keys(FILTER_OPTIONS).forEach(key => {
+        const paramKey = key.toLowerCase() as keyof FlexibleQueryParams;
+        const paramValue = params[paramKey];
+
+        if (paramValue !== null && paramValue !== undefined) {
+            const values = Array.isArray(paramValue) ? paramValue : [paramValue];
+            const options = FILTER_OPTIONS[key as keyof typeof FILTER_OPTIONS];
             const orConditions = values.flatMap(value => {
-                const filterInfo = filterMapEntry[value as string];
-                if (filterInfo?.filter) {
-                    return Array.isArray(filterInfo.filter) ? filterInfo.filter : [filterInfo.filter];
+                if (typeof value === 'string') {
+                    const option = Object.entries(options).find(([, opt]) => opt.value === value);
+                    return option ? [{[key.toLowerCase()]: option[1].value}] : [];
                 }
                 return [];
             });
@@ -68,11 +55,9 @@ function generateFilterConditions(params: QueryParams): string {
                 conditions.push({"$or": orConditions});
             }
         }
-    }
+    });
 
-    // 각 파라미터에 대해 조건 추가
-    (Object.keys(typedFilterMap) as Array<keyof FilterMapType>).forEach(addCondition);
-
+    console.log('Generated conditions:', JSON.stringify({"$and": conditions}));
     return JSON.stringify({"$and": conditions});
 }
 

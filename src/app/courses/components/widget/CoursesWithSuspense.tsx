@@ -2,9 +2,10 @@
 import {CourseCard} from "app/courses/components/ui/CourseCard";
 import {useCourse} from "app/courses/hooks/useCourse";
 import styled from "@emotion/styled";
-import {ArrayParam, withDefault, StringParam, useQueryParams, NumberParam} from "use-query-params";
+import {useQueryState, parseAsInteger, parseAsString, parseAsArrayOf,} from "nuqs";
 import {useRouter} from "next/navigation";
-import AsyncBoundary from "components/AsyncBoundary"; // AsyncBoundary 컴포넌트 추가
+import AsyncBoundary from "components/AsyncBoundary";
+import {parsers} from "constants/queryParams";
 
 const CardWrapper = styled.div`
     display: grid;
@@ -12,10 +13,7 @@ const CardWrapper = styled.div`
     gap: 1rem;
     padding-top: 3rem;
 `;
-
-type AnyFilterConditions = {
-    [key: string]: string | string[] | number | undefined;
-};
+//TODO 객체 스타일로 변경하기
 
 
 export const CoursesWithSuspense = () => {
@@ -31,21 +29,29 @@ export const CoursesWithSuspense = () => {
 
 
 const Resolved: React.FC = () => {
+    //TODO parser 추가하기
+    const [courseType] = useQueryState('course_type', parseAsArrayOf());
+    const [format] = useQueryState('format', parsers.format.array);
+    const [programmingLanguage] = useQueryState('programming_language', parsers.programmingLanguage.array);
+    const [category] = useQueryState('category', parsers.category.array);
+    const [level] = useQueryState('level', parsers.level.array);
+    const [price] = useQueryState('price', parsers.price.array);
+    const [tab] = useQueryState('tab', parseAsString);
+    const [keyword] = useQueryState('keyword', parseAsString);
+    const [offset] = useQueryState('offset', parseAsInteger);
+    const [count] = useQueryState('count', parseAsInteger);
 
-    const MyFiltersParam = withDefault(ArrayParam, []);
-    // 상태 변화에 따른 쿼리 실행을 위한 구문
-    const [query] = useQueryParams({
-        category: MyFiltersParam,
-        courseType: MyFiltersParam,
-        level: MyFiltersParam,
-        programmingLanguage: MyFiltersParam,
-        price: MyFiltersParam,
-        tab: StringParam,
-        offset: NumberParam,
-        count: NumberParam,
-    });
+    const filterConditions = {
+        category,
+        courseType,
+        level,
+        programmingLanguage,
+        price,
+        tab,
+        format,
+        keyword,
+    }
 
-    const {offset, count, ...filterConditions} = query as AnyFilterConditions;
 
     const {data} = useCourse(filterConditions, offset as number, count as number);
 
