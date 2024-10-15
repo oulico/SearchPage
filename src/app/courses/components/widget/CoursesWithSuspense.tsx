@@ -2,10 +2,10 @@
 import {CourseCard} from "app/courses/components/ui/CourseCard";
 import {useCourse} from "app/courses/hooks/useCourse";
 import styled from "@emotion/styled";
-import {useQueryState, parseAsInteger, parseAsString, parseAsArrayOf,} from "nuqs";
+import {useQueryState, parseAsInteger, parseAsString, parseAsArrayOf, parseAsJson,} from "nuqs";
 import {useRouter} from "next/navigation";
 import AsyncBoundary from "components/AsyncBoundary";
-import {parsers} from "constants/queryParams";
+import {parsers, queryParamsSchema} from "constants/queryParams";
 
 const CardWrapper = styled.div`
     display: grid;
@@ -30,7 +30,7 @@ export const CoursesWithSuspense = () => {
 
 const Resolved: React.FC = () => {
     //TODO parser 추가하기
-    const [courseType] = useQueryState('course_type', parseAsArrayOf());
+    const [courseType] = useQueryState('course_type', parsers.courseType.array);
     const [format] = useQueryState('format', parsers.format.array);
     const [programmingLanguage] = useQueryState('programming_language', parsers.programmingLanguage.array);
     const [category] = useQueryState('category', parsers.category.array);
