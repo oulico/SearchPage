@@ -4,6 +4,7 @@ import {useCourse} from "app/courses/hooks/useCourse";
 import styled from "@emotion/styled";
 import {useRouter} from "next/navigation";
 import AsyncBoundary from "components/AsyncBoundary";
+import {Pagination} from "app/courses/components/widget/Pagination";
 
 const CardWrapper = styled.div({
     display: 'grid',
@@ -38,6 +39,7 @@ const Resolved: React.FC = () => {
                     <CourseCard key={course.title} course={course}/>
                 ))}
             </CardWrapper>
+            <Pagination/>
         </>
     );
 };
