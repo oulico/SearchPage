@@ -51,14 +51,14 @@ export const FILTER_OPTIONS = {
 
 // QueryParams 타입 정의
 export type QueryParams = {
-    courseType?: string[] | null;
-    format?: string[] | null;
-    category?: string[] | null;
-    level?: string[] | null;
-    programmingLanguage?: string[] | null;
-    price?: string[] | null;
-    tab?: string | null;
-    keyword?: string | null;
+    courseType?: string | string[] | undefined;
+    format?: string | string[] | undefined;
+    category?: string | string[] | undefined;
+    level?: string | string[] | undefined;
+    programmingLanguage?: string | string[] | undefined;
+    price?: string | string[] | undefined;
+    tab?: string | undefined;
+    keyword?: string | undefined;
 };
 
 // Zod 스키마 정의
@@ -69,8 +69,8 @@ export const queryParamsSchema = z.object({
     level: z.string().or(z.array(z.string())).optional(),
     programmingLanguage: z.string().or(z.array(z.string())).optional(),
     price: z.string().or(z.array(z.string())).optional(),
-    keyword: z.string().optional(),
-    tab: z.string().optional(),
+    keyword: z.string().nullable().default(""),
+    tab: z.string().nullable().default("course"),
 });
 
 // 단일 값을 위한 파서 생성 함수

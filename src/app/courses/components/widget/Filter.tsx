@@ -2,12 +2,12 @@
 
 import React from "react";
 import {useRouter} from 'next/navigation';
-import {FILTER_OPTIONS, parsers} from 'constants/queryParams';
+import {FILTER_OPTIONS, QueryParams} from 'constants/queryParams';
 import {ToggleButton} from "app/courses/components/ui/ToggleButton";
 import AsyncBoundary from "components/AsyncBoundary";
 import styled from "@emotion/styled";
 import {colors} from 'constants/styleScheme'
-import {useQueryState} from "nuqs";
+import {useQueryParams} from 'hooks/useQueryParams';
 
 type FilterKey = keyof typeof FILTER_OPTIONS;
 type FilterOption = {
@@ -55,40 +55,29 @@ const ErrorFallback: React.FC<{ reset: () => void }> = ({reset}) => (
 
 
 const Resolved: React.FC = () => {
-    const [courseType, setCourseType] = useQueryState('course_type', parsers.courseType.array);
-    const [format, setFormat] = useQueryState('format', parsers.format.array);
-    const [programmingLanguage, setProgrammingLanguage] = useQueryState('programming_language', parsers.programmingLanguage.array);
-    const [category, setCategory] = useQueryState('category', parsers.category.array);
-    const [level, setLevel] = useQueryState('level', parsers.level.array);
-    const [price, setPrice] = useQueryState('price', parsers.price.array);
+    const { queries, addToQuery, removeFromQuery } = useQueryParams();
 
-    const filterStates: Record<FilterKey, [string[] | null, (value: string[] | null) => void]> = {
-        COURSE_TYPE: [courseType, setCourseType],
-        FORMAT: [format, setFormat],
-        PROGRAMMING_LANGUAGE: [programmingLanguage, setProgrammingLanguage],
-        CATEGORY: [category, setCategory],
-        LEVEL: [level, setLevel],
-        PRICE: [price, setPrice],
+    const handleToggle = (key: keyof QueryParams, optionId: string) => {
+        const currentValues = queries[key];
+        if (currentValues.includes(optionId)) {
+            removeFromQuery(key, optionId);
+        } else {
+            addToQuery(key, optionId);
+        }
     };
 
-    const updateSearchParams = (key: FilterKey, value: string) => {
-        const [currentValues, setValues] = filterStates[key];
-        const newValues = currentValues?.includes(value)
-            ? currentValues.filter(v => v !== value)
-            : [...(currentValues || []), value];
-        setValues(newValues);
-    };
-
-    const renderToggleButtons = (key: FilterKey) => (
-        Object.entries(FILTER_OPTIONS[key] as FilterOptionGroup).map(([, option]) => (
+    const renderToggleButtons = (key: keyof typeof FILTER_OPTIONS) => {
+        const options = FILTER_OPTIONS[key];
+        const selectedValues = queries[key.toLowerCase() as keyof QueryParams];
+        return Object.entries(options).map(([, option]) => (
             <ToggleButton
                 key={option.value}
                 label={option.label}
-                isSelected={filterStates[key][0]?.includes(option.value) || false}
-                onToggle={() => updateSearchParams(key, option.value)}
+                isSelected={selectedValues.includes(option.value)}
+                onToggle={() => handleToggle(key.toLowerCase() as keyof QueryParams, option.value)}
             />
-        ))
-    );
+        ));
+    };
 
     return (
         <FilterWrapper>
