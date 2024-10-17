@@ -17,16 +17,6 @@ interface Course {
 }
 
 // BFF 코스 인터페이스 정의
-// export interface BffCourse {
-//     id: number;
-//     title: string;
-//     short_description: string;
-//     taglist: string[];
-//     image_file_url: string;
-//     is_free: boolean;
-//     subtitle: string;
-//     discounted_price: string;
-// }
 export interface BffCourseList {
     courseCount: number;
     courses: BffCourse[];
@@ -55,88 +45,58 @@ export interface BffCourse {
     isFree: boolean;
 }
 
-
 // queryParamsSchema를 확장해서 offset과 count를 추가
 const searchParamsSchema = queryParamsSchema.extend({
     offset: z.string().transform(s => s === 'undefined' ? undefined : Number(s)).optional(),
     count: z.string().transform(s => s === 'undefined' ? undefined : Number(s)).optional(),
 });
 
-
 // 외부 API 호출 함수
 async function fetchCourses(filterConditions: string, offset = 0, count = 12) {
     const apiUrl = `https://api-rest.elice.io/org/academy/course/list/?filter_conditions=${encodeURIComponent(filterConditions)}&offset=${offset}&count=${count}`;
-    console.log('apiurl', apiUrl)
-
     const response = await fetch(apiUrl);
     const data = await response.json();
-
     return data;
 }
 
 // API 핸들러 구현
 export async function GET(req: NextRequest) {
-    let searchParams = {};
-    searchParams = Object.fromEntries(req.nextUrl.searchParams);
+    const searchParams = req.nextUrl.searchParams
 
-    console.log('this is nextUrl:', req.nextUrl)
-    console.log('this is searchParams:', searchParams)
+    const queryParams = {
+        format: searchParams.getAll('format'),
+        category: searchParams.getAll('category'),
+        level: searchParams.getAll('level'),
+        programmingLanguage: searchParams.getAll('programming_language'),
+        price: searchParams.getAll('price'),
+        tab: searchParams.get('tab'),
+        offset: searchParams.get('offset'),
+        count: searchParams.get('count'),
+        keyword: searchParams.get('keyword'),
+    };
 
 
-    // safeParse로 검증
-    const result = searchParamsSchema.parse(searchParams);
+    const result = searchParamsSchema.safeParse(queryParams);
 
-    // const filterConditions = generateFilterConditions(result);
-    // if (!result.success) {
-    //     return NextResponse.json({error: "Invalid query parameters"}, {status: 400});
-    // }
+    if (!result.success) {
+        console.log("Validation errors:", result.error.errors);
+    } else {
+        console.log("Parsed data:", result.data);
+    }
 
 
-    console.log('this is result:', result)
+// 필터 조건 JSON 생성
+//@ts-expect-error TODO 타입 설정은 나중에 하기.
+    const filterConditions = generateFilterConditions(result.data);
 
-    //  이제 잘 들어옴
-    // this is result: {
-    //   format: [ 8, 7 ],
-    //   format: [ 2, 1 ],
-    //   field: [ 6, 8, 5, 4 ],
-    //   level: 12,
-    //   programmingLanguage: [
-    //     20, 22, 24, 25, 26,
-    //     28, 17, 18, 27
-    //   ],
-    //   price: 32,
-    //   tab: undefined,
-    //   page: undefined,
-    //   pageSize: undefined
-    // }
 
-    // 필터 조건 JSON 생성
-
-    const filterConditions = generateFilterConditions(result);
-    console.log('conditions', filterConditions)
-
-    // const filterConditions = {
-    //     "$and": [
-    //         result.data.title ? {"title": `%${result.data.title}%`} : {},
-    //         result.data.status?.length ? {"$or": result.data.status.map((status) => ({status: parseInt(status, 10)}))} : {},
-    //         result.data.is_datetime_enrollable === 'true' ? {"is_datetime_enrollable": true} : {}
-    //     ].filter(Boolean),
-    // };
-    //
-    // console.log('this is filter conditions:', filterConditions);
-    // 여기서 ㅇ제대로 안들어옴.
-
-    // 문자열에서 원래 자료형으로 변환
-    // const parsedOffset = parseInt(result.offset, 10);
-    // const parsedCount = parseInt(result.count, 10);
-
-    // 외부 API 요청
+// 외부 API 요청
     try {
         const courses = await fetchCourses(
             filterConditions,
         );
 
-        console.log('this is courses:', courses)
+        // console.log('this is courses:', courses)
 
         if (courses._result.status !== "ok") {
             return NextResponse.json({error: "Failed to fetch data from external API"}, {status: 500});
