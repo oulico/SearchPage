@@ -2,20 +2,15 @@
 import {CourseCard} from "app/courses/components/ui/CourseCard";
 import {useCourse} from "app/courses/hooks/useCourse";
 import styled from "@emotion/styled";
-import {ArrayParam, withDefault, StringParam, useQueryParams, NumberParam} from "use-query-params";
 import {useRouter} from "next/navigation";
-import AsyncBoundary from "components/AsyncBoundary"; // AsyncBoundary 컴포넌트 추가
+import AsyncBoundary from "components/AsyncBoundary";
 
-const CardWrapper = styled.div`
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-    gap: 1rem;
-    padding-top: 3rem;
-`;
-
-type AnyFilterConditions = {
-    [key: string]: string | string[] | number | undefined;
-};
+const CardWrapper = styled.div({
+    display: 'grid',
+    gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))',
+    gap: '1rem',
+    paddingTop: '3rem',
+})
 
 
 export const CoursesWithSuspense = () => {
@@ -32,23 +27,7 @@ export const CoursesWithSuspense = () => {
 
 const Resolved: React.FC = () => {
 
-    const MyFiltersParam = withDefault(ArrayParam, []);
-    // 상태 변화에 따른 쿼리 실행을 위한 구문
-    const [query] = useQueryParams({
-        category: MyFiltersParam,
-        courseType: MyFiltersParam,
-        level: MyFiltersParam,
-        programmingLanguage: MyFiltersParam,
-        price: MyFiltersParam,
-        tab: StringParam,
-        offset: NumberParam,
-        count: NumberParam,
-    });
-
-    const {offset, count, ...filterConditions} = query as AnyFilterConditions;
-
-    const {data} = useCourse(filterConditions, offset as number, count as number);
-
+    const {data} = useCourse();
     if (!data || !data.courses) return null;
 
     return (

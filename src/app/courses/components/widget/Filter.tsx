@@ -1,26 +1,26 @@
 'use client'
 
 import React from "react";
-import {useRouter, useSearchParams} from 'next/navigation';
-import {
-    CATEGORIES,
-    COURSE_TYPES,
-    FORMATS,
-    LEVELS,
-    PRICES,
-    PROGRAMMING_LANGUAGES
-} from "constants/queryParams";
-
+import {useRouter} from 'next/navigation';
+import {FILTER_OPTIONS, FILTER_OPTION_LABLE, QueryParams} from 'constants/queryParams';
 import {ToggleButton} from "app/courses/components/ui/ToggleButton";
-import AsyncBoundary from "components/AsyncBoundary"; // AsyncBoundary 추가
+import AsyncBoundary from "components/AsyncBoundary";
 import styled from "@emotion/styled";
 import {colors} from 'constants/styleScheme'
+import {useQueryParams} from 'hooks/useQueryParams';
 
-type FilterKey = 'courseType' | 'format' | 'programmingLanguage' | 'category' | 'level' | 'price';
+type FilterKey = keyof typeof FILTER_OPTIONS;
+type FilterOptionLabelKey = keyof typeof FILTER_OPTION_LABLE;
+
+const getLabel = (key: FilterKey): string => {
+    const upperKey = key.toUpperCase() as FilterOptionLabelKey;
+    return FILTER_OPTION_LABLE[upperKey] || key;
+};
 
 const FilterWrapper = styled.div({
     paddingTop: '12px',
 });
+
 const FilterTable = styled.table({
     width: '100%',
     borderCollapse: 'collapse',
@@ -31,116 +31,90 @@ const FilterTable = styled.table({
         width: '100px',
     },
     'th, td': {
-        border: '1px solid',
-        borderCollapse: 'collapse',
-        borderColor: colors.gray[200],
         padding: '8px',
         textAlign: 'left',
+
     },
+    'th:first-of-type': {
+        width: '100px',
+        borderRight: '1px solid',
+        borderColor: colors.gray[200],
+    },
+    'tr': {
+        border: '1px solid',
+        borderColor: colors.gray[200],
+    }
 });
+
 const TD = styled.td({
     display: 'flex',
+    border: 'none',
     flexWrap: 'wrap',
     gap: '4px',
 });
 
-// 검색 결과를 로드할 때 보여줄 컴포넌트
-const LoadingFallback: React.FC = () => {
-    return <div>Loading filter...</div>;
-};
+const LoadingFallback: React.FC = () => <div>Loading filter...</div>;
 
-// 에러 발생 시 보여줄 컴포넌트
-const ErrorFallback: React.FC<{ reset: () => void }> = ({reset}) => {
-    return (
-        <div>
-            <p>Error loading filters. Please try again later.</p>
-            <button onClick={reset}>Try again</button>
-        </div>
-    );
-};
+const ErrorFallback: React.FC<{ reset: () => void }> = ({reset}) => (
+    <div>
+        <p>Error loading filters. Please try again later.</p>
+        <button onClick={reset}>Try again</button>
+    </div>
+);
 
 
 const Resolved: React.FC = () => {
-    const router = useRouter();
-    const searchParams = useSearchParams();
+    const {queries, addToQuery, removeFromQuery} = useQueryParams();
 
-    const getSelectedParams = (key: FilterKey, labels: typeof COURSE_TYPES | typeof FORMATS | typeof PROGRAMMING_LANGUAGES | typeof CATEGORIES | typeof LEVELS | typeof PRICES) => {
-        const selectedValues = searchParams.getAll(key);
-        return Object.entries(labels).reduce((acc, [enumKey, id]) => {
-            acc[enumKey] = selectedValues.includes(id) ? id : '';
-            return acc;
-        }, {} as Record<string, string>);
-    };
-
-    const updateSearchParams = (key: FilterKey, value: string) => {
-        const newSearchParams = new URLSearchParams(searchParams);
-        const currentValues = newSearchParams.getAll(key);
-
-        let newValues: string[];
-        if (currentValues.includes(value)) {
-            newValues = currentValues.filter(v => v !== value);
+    const handleToggle = (key: keyof QueryParams, optionId: string) => {
+        const currentValues = queries[key];
+        if (currentValues.includes(optionId)) {
+            removeFromQuery(key, optionId);
         } else {
-            newValues = [...currentValues, value];
+            addToQuery(key, optionId);
         }
-
-        newSearchParams.delete(key);
-        newValues.forEach(v => newSearchParams.append(key, v));
-
-        router.push(`?${newSearchParams.toString()}`, {scroll: false});
     };
 
-    const renderToggleButtons = (labels: typeof COURSE_TYPES | typeof FORMATS | typeof PROGRAMMING_LANGUAGES | typeof CATEGORIES | typeof LEVELS | typeof PRICES, key: FilterKey) => (
-        Object.entries(labels).map(([enumKey, id]) => (
+    const renderToggleButtons = (key: keyof typeof FILTER_OPTIONS) => {
+        const options = FILTER_OPTIONS[key];
+        const selectedValues = queries[key.toLowerCase() as keyof QueryParams];
+        return Object.entries(options).map(([, option]) => (
             <ToggleButton
-                key={id}
-                label={enumKey}
-                isSelected={getSelectedParams(key, labels)[enumKey] !== ''}
-                onToggle={() => updateSearchParams(key, id)}
+                key={option.value}
+                label={option.label}
+                isSelected={selectedValues.includes(option.value)}
+                onToggle={() => handleToggle(key.toLowerCase() as keyof QueryParams, option.value)}
             />
-        ))
-    );
+        ));
+    };
+
 
     return (
         <FilterWrapper>
             <FilterTable role="grid" aria-labelledby="filter-table-title">
-                {/*<caption id="filter-table-title" className="sr-only">강좌 필터 옵션</caption>*/}
                 <tbody>
-                <tr>
-                    <th className="fixed-width">유형</th>
-                    <TD>{renderToggleButtons(COURSE_TYPES, 'format')}</TD>
-                </tr>
-                <tr>
-                    <th className="fixed-width">진행방식</th>
-                    <TD>{renderToggleButtons(FORMATS, 'format')}</TD>
-                </tr>
-                <tr>
-                    <th className="fixed-width">언어</th>
-                    <TD>{renderToggleButtons(PROGRAMMING_LANGUAGES, 'programmingLanguage')}</TD>
-                </tr>
-                <tr>
-                    <th className="fixed-width">분야</th>
-                    <TD>{renderToggleButtons(CATEGORIES, 'category')}</TD>
-                </tr>
-                <tr>
-                    <th className="fixed-width">난이도</th>
-                    <TD>{renderToggleButtons(LEVELS, 'level')}</TD>
-                </tr>
-                <tr>
-                    <th className="fixed-width">가격</th>
-                    <TD>{renderToggleButtons(PRICES, 'price')}</TD>
-                </tr>
+                {(Object.keys(FILTER_OPTIONS) as FilterKey[]).map(key => {
+                    return (
+                        <tr key={key}>
+                            <th className="fixed-width">{getLabel(key)}</th>
+                            <TD>{renderToggleButtons(key)}</TD>
+                        </tr>
+                    );
+                })}
                 </tbody>
             </FilterTable>
         </FilterWrapper>
     );
 };
 
-// AsyncBoundary로 감싸서 에러와 로딩 처리
 export const FilterWithSuspense: React.FC = () => {
     const router = useRouter();
 
     return (
-        <AsyncBoundary pending={<LoadingFallback/>} rejected={() => <ErrorFallback reset={() => router.refresh()}/>}>
+        <AsyncBoundary
+            pending={<LoadingFallback/>}
+            rejected={() => <ErrorFallback reset={() => router.refresh()}/>}
+        >
             <Resolved/>
         </AsyncBoundary>
     );

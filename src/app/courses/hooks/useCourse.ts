@@ -2,6 +2,7 @@
 import {useQuery, QueryClient} from '@tanstack/react-query';
 import {BffCourseList} from "app/api/courses/route";
 import {QueryParams} from "constants/queryParams";
+import {useSearchParams} from "next/navigation";
 
 
 export const getCourses = async ({queryParams, offset, count}: {
@@ -10,10 +11,17 @@ export const getCourses = async ({queryParams, offset, count}: {
     count: number
 }): Promise<BffCourseList> => {
 
-    //객체를 쿼리스트링으로 변환
-    const searchParams = new URLSearchParams(queryParams as Record<string, string>);
+    //객체를 쿼리스트링으로 변환. 근데 중복된 키를 사용하도록 하기.
+    const searchParams = new URLSearchParams();
+    Object.entries(queryParams).forEach(([key, value]) => {
+        if (Array.isArray(value)) {
+            value.forEach(v => searchParams.append(key, v));
+        } else if (value !== undefined) {
+            searchParams.append(key, value);
+        }
+    });
 
-    const url = `/api/courses?${searchParams.toString()}&offset=${offset}&count=${count}`;
+    const url = `/api/courses?${searchParams.toString()}&offset=${offset}&count=${count}`
 
     const response = await fetch(url, {
         credentials: 'include',
@@ -29,19 +37,42 @@ export const getCourses = async ({queryParams, offset, count}: {
     return await response.json();
 };
 
-export const useCourse = (queryParams: QueryParams, offset: number, count
-    : number) => {
-    // 들어오는 값은 객체임. 이 객체를 그냥 전달하면 됨. 그런데 쿼리키를 객체로 하는게 좋을지?
-    // 이를테면 배열이니까 순서가 바뀌지 않는지?
-    // 그렇다면 항상 같은 순서로 sorting을 하자.
-    // 그리고 직렬화하자.
+export const useCourse = (offset = 0, count = 12) => {
+    const searchParams = useSearchParams();
 
-    console.log('useCourse queryParams:', queryParams, offset, count);
-    const sortedQueryParams = Object.fromEntries(Object.entries(queryParams).sort());
-    const stringifiedQueryParams = JSON.stringify(sortedQueryParams);
+    const queryParams: QueryParams = {};
+    searchParams.forEach((value, key) => {
+        if (key in queryParams) {
+            // @ts-expect-error TODO 인덱스 키로 문자열을 사용할 수 없기 때문에, 좀 더 유연하게 타입을 만들어줘야한다.
+            if (Array.isArray(queryParams[key])) {
+                // @ts-expect-error 인덱스 키로 문자열을 사용할 수 없기 때문에, 좀 더 유연하게 타입을 만들어줘야한다.
+                (queryParams[key] as string[]).push(value);
+            } else {
+                // @ts-expect-error 인덱스 키로 문자열을 사용할 수 없기 때문에, 좀 더 유연하게 타입을 만들어줘야한다.
+                queryParams[key] = [queryParams[key] as string, value];
+            }
+        } else {
+            // @ts-expect-error 인덱스 키로 문자열을 사용할 수 없기 때문에, 좀 더 유연하게 타입을 만들어줘야한다.
+            queryParams[key] = value;
+        }
+    });
+
+    // 정렬된 쿼리 문자열 생성
+    const sortedSearchParams = new URLSearchParams();
+    Object.entries(queryParams)
+        .sort(([a], [b]) => a.localeCompare(b))
+        .forEach(([key, value]) => {
+            if (Array.isArray(value)) {
+                value.forEach(v => sortedSearchParams.append(key, v));
+            } else if (value !== undefined) {
+                sortedSearchParams.append(key, value);
+            }
+        });
+
+    const sortedQueryString = sortedSearchParams.toString();
 
     return useQuery<BffCourseList, Error>({
-        queryKey: ['courses', stringifiedQueryParams],
+        queryKey: ['courses', sortedQueryString, offset, count],
         queryFn: () => getCourses({queryParams, offset, count}),
     });
 };

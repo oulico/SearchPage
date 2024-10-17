@@ -1,28 +1,9 @@
-import {z} from 'zod';
-import {COURSE_TYPES, FORMATS, CATEGORIES, LEVELS, PROGRAMMING_LANGUAGES, PRICES} from 'constants/queryParams';
-import {FILTER_MAP} from "constants/filterMap";
+import { z } from 'zod';
+import { FILTER_MAP } from "constants/filterMap";
+import { queryParamsSchema } from "constants/queryParams";
 
-const CourseTypeSchema = z.enum(Object.values(COURSE_TYPES) as [string, ...string[]]);
-const FormatSchema = z.enum(Object.values(FORMATS) as [string, ...string[]]);
-const CategorySchema = z.enum(Object.values(CATEGORIES) as [string, ...string[]]);
-const LevelSchema = z.enum(Object.values(LEVELS) as [string, ...string[]]);
-const ProgrammingLanguageSchema = z.enum(Object.values(PROGRAMMING_LANGUAGES) as [string, ...string[]]);
-const PriceSchema = z.enum(Object.values(PRICES) as [string, ...string[]]);
-
-export const queryParamsSchema = z.object({
-    courseType: CourseTypeSchema.or(z.array(CourseTypeSchema)).optional(),
-    format: FormatSchema.or(z.array(FormatSchema)).optional(),
-    category: CategorySchema.or(z.array(CategorySchema)).optional(),
-    level: LevelSchema.or(z.array(LevelSchema)).optional(),
-    programmingLanguage: ProgrammingLanguageSchema.or(z.array(ProgrammingLanguageSchema)).optional(),
-    price: PriceSchema.or(z.array(PriceSchema)).optional(),
-    tab: z.string().optional(),
-    offset: z.number().optional(),
-    count: z.number().optional(),
-});
 export type QueryParams = z.infer<typeof queryParamsSchema>;
 
-// FILTER_MAP의 구조를 명시적으로 정의
 type FilterValue = {
     query: Record<string, string>;
     filter: Record<string, unknown> | Record<string, unknown>[];
@@ -34,7 +15,6 @@ type FilterMapType = {
     };
 };
 
-// FILTER_MAP이 FilterMapType을 따르는지 확인 (타입 단언 사용)
 const typedFilterMap = FILTER_MAP as FilterMapType;
 
 type Condition =
@@ -44,36 +24,52 @@ type Condition =
     | Record<string, unknown>;
 
 function generateFilterConditions(params: QueryParams): string {
+    console.log('params', params);
     const conditions: Condition[] = [
-        {"title": "%%"},
-        {"$or": [{"status": 2}, {"status": 3}, {"status": 4}]},
-        {"is_datetime_enrollable": true}
+        { "$or": [{ "status": 2 }, { "status": 3 }, { "status": 4 }] },
+        { "is_datetime_enrollable": true }
     ];
 
-    function addCondition(paramKey: keyof FilterMapType) {
-        const param = params[paramKey];
-        const filterMapEntry = typedFilterMap[paramKey];
-
-        if (param && filterMapEntry) {
-            const values = Array.isArray(param) ? param : [param];
-            const orConditions = values.flatMap(value => {
-                const filterInfo = filterMapEntry[value as string];
-                if (filterInfo?.filter) {
-                    return Array.isArray(filterInfo.filter) ? filterInfo.filter : [filterInfo.filter];
-                }
-                return [];
-            });
-
-            if (orConditions.length > 0) {
-                conditions.push({"$or": orConditions});
-            }
-        }
+    // keyword 처리
+    if (params.keyword && params.keyword !== '') {
+        conditions.push({ "title": `%${decodeURIComponent(params.keyword)}%` });
+    } else {
+        conditions.push({ "title": "%%" });
     }
 
-    // 각 파라미터에 대해 조건 추가
-    (Object.keys(typedFilterMap) as Array<keyof FilterMapType>).forEach(addCondition);
+    // tab 처리
+    if (params.tab && params.tab !== null) {
+        conditions.push({ "tab": params.tab });
+    }
 
-    return JSON.stringify({"$and": conditions});
+    // 나머지 params 처리
+    const filterKeys: (keyof QueryParams)[] = ['format', 'category', 'level', 'programmingLanguage', 'price'];
+
+    filterKeys.forEach(key => {
+        const values = params[key];
+        if (Array.isArray(values) && values.length > 0) {
+            const filterGroup = typedFilterMap[key];
+            if (filterGroup) {
+                const orConditions: Record<string, unknown>[] = [];
+                values.forEach(v => {
+                    const filterValue = filterGroup[v];
+                    if (filterValue && filterValue.filter) {
+                        if (Array.isArray(filterValue.filter)) {
+                            orConditions.push(...filterValue.filter);
+                        } else {
+                            orConditions.push(filterValue.filter);
+                        }
+                    }
+                });
+                if (orConditions.length > 0) {
+                    conditions.push({ "$or": orConditions });
+                }
+            }
+        }
+    });
+
+    console.log('Generated conditions:', JSON.stringify({ "$and": conditions }));
+    return JSON.stringify({ "$and": conditions });
 }
 
-export {generateFilterConditions};
+export { generateFilterConditions };
