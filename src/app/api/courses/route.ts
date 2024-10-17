@@ -79,6 +79,7 @@ export async function GET(req: NextRequest) {
 
     console.log('offset received', queryParams.offset)
 
+    console.log('이건 문자열 배열로 값을 넣어줌.', queryParams)
     const result = searchParamsSchema.safeParse(queryParams);
 
     if (!result.success) {

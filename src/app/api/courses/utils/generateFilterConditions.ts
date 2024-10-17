@@ -1,8 +1,5 @@
-import { z } from 'zod';
-import { FILTER_MAP } from "constants/filterMap";
-import { queryParamsSchema } from "constants/queryParams";
-
-export type QueryParams = z.infer<typeof queryParamsSchema>;
+import {FILTER_MAP} from "constants/filterMap";
+import {QueryParams} from "constants/queryParams";
 
 type FilterValue = {
     query: Record<string, string>;
@@ -26,20 +23,20 @@ type Condition =
 function generateFilterConditions(params: QueryParams): string {
     console.log('params', params);
     const conditions: Condition[] = [
-        { "$or": [{ "status": 2 }, { "status": 3 }, { "status": 4 }] },
-        { "is_datetime_enrollable": true }
+        {"$or": [{"status": 2}, {"status": 3}, {"status": 4}]},
+        {"is_datetime_enrollable": true}
     ];
 
     // keyword 처리
     if (params.keyword && params.keyword !== '') {
-        conditions.push({ "title": `%${decodeURIComponent(params.keyword)}%` });
+        conditions.push({"title": `%${decodeURIComponent(params.keyword)}%`});
     } else {
-        conditions.push({ "title": "%%" });
+        conditions.push({"title": "%%"});
     }
 
     // tab 처리
     if (params.tab && params.tab !== null) {
-        conditions.push({ "tab": params.tab });
+        conditions.push({"tab": params.tab});
     }
 
     // 나머지 params 처리
@@ -62,14 +59,14 @@ function generateFilterConditions(params: QueryParams): string {
                     }
                 });
                 if (orConditions.length > 0) {
-                    conditions.push({ "$or": orConditions });
+                    conditions.push({"$or": orConditions});
                 }
             }
         }
     });
 
-    console.log('Generated conditions:', JSON.stringify({ "$and": conditions }));
-    return JSON.stringify({ "$and": conditions });
+    console.log('Generated conditions:', JSON.stringify({"$and": conditions}));
+    return JSON.stringify({"$and": conditions});
 }
 
-export { generateFilterConditions };
+export {generateFilterConditions};

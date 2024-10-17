@@ -2,7 +2,11 @@
 
 import React from "react";
 import {useRouter} from 'next/navigation';
-import {FILTER_OPTIONS, FILTER_OPTION_LABLE, QueryParams} from 'constants/queryParams';
+import {
+    FILTER_OPTIONS,
+    QueryParams,
+    getFilterOptions,
+} from 'constants/queryParams';
 import {ToggleButton} from "app/courses/components/ui/ToggleButton";
 import AsyncBoundary from "components/AsyncBoundary";
 import styled from "@emotion/styled";
@@ -10,12 +14,7 @@ import {colors} from 'constants/styleScheme'
 import {useQueryParams} from 'hooks/useQueryParams';
 
 type FilterKey = keyof typeof FILTER_OPTIONS;
-type FilterOptionLabelKey = keyof typeof FILTER_OPTION_LABLE;
 
-const getLabel = (key: FilterKey): string => {
-    const upperKey = key.toUpperCase() as FilterOptionLabelKey;
-    return FILTER_OPTION_LABLE[upperKey] || key;
-};
 
 const FilterWrapper = styled.div({
     paddingTop: '12px',
@@ -76,9 +75,17 @@ const Resolved: React.FC = () => {
     };
 
     const renderToggleButtons = (key: keyof typeof FILTER_OPTIONS) => {
-        const options = FILTER_OPTIONS[key];
+        // const options = FILTER_OPTIONS[key];
         const selectedValues = queries[key.toLowerCase() as keyof QueryParams];
-        return Object.entries(options).map(([, option]) => (
+        // return Object.entries(options).map(([, option]) => (
+        //     <ToggleButton
+        //         key={option.value}
+        //         label={option.label}
+        //         isSelected={selectedValues.includes(option.value)}
+        //         onToggle={() => handleToggle(key.toLowerCase() as keyof QueryParams, option.value)}
+        //     />
+        // ));
+        return getFilterOptions(key).map(option => (
             <ToggleButton
                 key={option.value}
                 label={option.label}
@@ -96,7 +103,7 @@ const Resolved: React.FC = () => {
                 {(Object.keys(FILTER_OPTIONS) as FilterKey[]).map(key => {
                     return (
                         <tr key={key}>
-                            <th className="fixed-width">{getLabel(key)}</th>
+                            <th className="fixed-width">{key}</th>
                             <TD>{renderToggleButtons(key)}</TD>
                         </tr>
                     );
