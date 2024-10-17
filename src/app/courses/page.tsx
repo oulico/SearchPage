@@ -1,28 +1,29 @@
 import {dehydrate} from '@tanstack/react-query';
 import {getQueryClient} from "utils/get-query-client";
-// import {getCourses} from "app/courses/hooks/useCourse";
 import {CoursesPageClient} from "app/courses/components/pages/CoursesPageClient";
-// import {Suspense} from "react";
-// import {QueryParams, queryParamsSchema} from "constants/queryParams";
+import {QueryParams} from "constants/queryParams";
+import {prefetchCoursesData} from "app/courses/hooks/utils/prefetchCoursesData";
 
 
 export default async function CoursesPageServer({}: {
     searchParams: { [key: string]: string | string[] | undefined }
 }) {
     const queryClient = getQueryClient();
-    // const queryParams = queryParamsSchema.parse(searchParams)
+    const queryParams: Partial<QueryParams> = {};
+    const searchParams = new URLSearchParams();
 
-    // console.log('query', queryParams)
+    Object.entries(queryParams).forEach(([key, value]) => {
+        if (Array.isArray(value)) {
+            value.forEach(v => searchParams.append(key, v));
+        } else if (value !== undefined && value !== null) {
+            searchParams.append(key, value);
+        }
+    });
 
-    // const sortedQueryParams = Object.fromEntries(Object.entries(queryParams).sort());
-    // const stringifiedQueryParams = JSON.stringify(sortedQueryParams);
+    await prefetchCoursesData(queryClient, queryParams);
 
-
-    // await queryClient.prefetchQuery({
-    //     queryKey: ['courses', stringifiedQueryParams],
-    //     queryFn: () => getCourses(queryParams)
-    // });
+    const dehydratedState = dehydrate(queryClient);
 
     // return <CoursesPageClient dehydratedState={dehydrate(queryClient)} initialPage={page}/>;
-    return <CoursesPageClient dehydratedState={dehydrate(queryClient)}/>;
+    return <CoursesPageClient dehydratedState={dehydratedState}/>;
 }
