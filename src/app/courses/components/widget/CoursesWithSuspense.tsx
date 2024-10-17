@@ -4,6 +4,8 @@ import {useCourse} from "app/courses/hooks/useCourse";
 import styled from "@emotion/styled";
 import {useRouter} from "next/navigation";
 import AsyncBoundary from "components/AsyncBoundary";
+import {Pagination} from "app/courses/components/widget/Pagination";
+import {useNumber} from "react-use";
 
 const CardWrapper = styled.div({
     display: 'grid',
@@ -27,7 +29,8 @@ export const CoursesWithSuspense = () => {
 
 const Resolved: React.FC = () => {
 
-    const {data} = useCourse();
+    const [offset, {set}] = useNumber(0);
+    const {data} = useCourse(offset);
     if (!data || !data.courses) return null;
 
     return (
@@ -38,6 +41,7 @@ const Resolved: React.FC = () => {
                     <CourseCard key={course.title} course={course}/>
                 ))}
             </CardWrapper>
+            <Pagination offset={offset} set={set}/>
         </>
     );
 };
