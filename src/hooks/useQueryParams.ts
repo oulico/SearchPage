@@ -19,13 +19,13 @@ export function useQueryParams() {
                 params.append(key, value);
             }
         }
-        router.push(`${pathname}?${params.toString()}`);
+        router.push(`${pathname}?${params.toString()}`, {scroll: false});
     }, [router, pathname, searchParams]);
 
     const addToQuery = useCallback((key: keyof QueryParams, value: string) => {
         const params = new URLSearchParams(searchParams);
         params.append(key, value);
-        router.push(`${pathname}?${params.toString()}`);
+        router.push(`${pathname}?${params.toString()}`, {scroll: false});
     }, [router, pathname, searchParams]);
 
     const removeFromQuery = useCallback((key: keyof QueryParams, value: string) => {
@@ -33,7 +33,7 @@ export function useQueryParams() {
         const values = params.getAll(key).filter(v => v !== value);
         params.delete(key);
         values.forEach(v => params.append(key, v));
-        router.push(`${pathname}?${params.toString()}`);
+        router.push(`${pathname}?${params.toString()}`, {scroll: false});
     }, [router, pathname, searchParams]);
 
     const getQuery = useCallback((key: keyof QueryParams): string[] => {
