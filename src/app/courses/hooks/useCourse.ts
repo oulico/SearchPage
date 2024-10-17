@@ -16,7 +16,7 @@ export const getCourses = async ({queryParams, offset, count}: {
     Object.entries(queryParams).forEach(([key, value]) => {
         if (Array.isArray(value)) {
             value.forEach(v => searchParams.append(key, v));
-        } else if (value !== undefined) {
+        } else if (value !== undefined && value !== null) {
             searchParams.append(key, value);
         }
     });
@@ -41,7 +41,8 @@ export const useCourse = (offset = 0, count = 12) => {
     console.log(offset)
     const searchParams = useSearchParams();
 
-    const queryParams: QueryParams = {};
+    const queryParams: Partial<QueryParams> = {};
+
     searchParams.forEach((value, key) => {
         if (key in queryParams) {
             // @ts-expect-error TODO 인덱스 키로 문자열을 사용할 수 없기 때문에, 좀 더 유연하게 타입을 만들어줘야한다.
@@ -65,7 +66,7 @@ export const useCourse = (offset = 0, count = 12) => {
         .forEach(([key, value]) => {
             if (Array.isArray(value)) {
                 value.forEach(v => sortedSearchParams.append(key, v));
-            } else if (value !== undefined) {
+            } else if (value !== undefined && value !== null) {
                 sortedSearchParams.append(key, value);
             }
         });

@@ -75,8 +75,8 @@ export const queryParamsSchema = z.object({
     level: levelSchema.array().optional(),
     programmingLanguage: programmingLanguageSchema.array().optional(),
     price: priceSchema.array().optional(),
-    keyword: z.string().nullable().default(""),
-    tab: z.string().nullable().default("course"),
+    keyword: z.string().nullable().optional(),
+    tab: z.string().nullable().optional(),
 });
 
 export type QueryParams = z.infer<typeof queryParamsSchema>;
