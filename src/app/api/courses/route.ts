@@ -54,6 +54,8 @@ const searchParamsSchema = queryParamsSchema.extend({
 // 외부 API 호출 함수
 async function fetchCourses(filterConditions: string, offset = 0, count = 12) {
     const apiUrl = `https://api-rest.elice.io/org/academy/course/list/?filter_conditions=${encodeURIComponent(filterConditions)}&offset=${offset}&count=${count}`;
+    console.log('apiUrl:', apiUrl)
+    console.log('decoded:', decodeURIComponent(apiUrl))
     const response = await fetch(apiUrl);
     const data = await response.json();
     return data;
@@ -75,6 +77,7 @@ export async function GET(req: NextRequest) {
         keyword: searchParams.get('keyword'),
     };
 
+    console.log('offset received', queryParams.offset)
 
     const result = searchParamsSchema.safeParse(queryParams);
 
@@ -94,6 +97,8 @@ export async function GET(req: NextRequest) {
     try {
         const courses = await fetchCourses(
             filterConditions,
+            result?.data?.offset,
+            result?.data?.count
         );
 
         // console.log('this is courses:', courses)

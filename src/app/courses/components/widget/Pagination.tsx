@@ -2,7 +2,7 @@
 import styled from "@emotion/styled";
 import {colors} from "constants/styleScheme";
 import {useCourse} from "app/courses/hooks/useCourse";
-import {useState} from "react";
+import {CounterActions} from "react-use/lib/useCounter";
 
 
 const ButtonWrapper = styled.div({
@@ -42,19 +42,21 @@ const PagesButtonWithIcon = styled(PagesButton)({
     justifyContent: 'center',
     alignItems: 'center',
 })
+const COUNT = 12;
 
-export const Pagination = () => {
-    const [offset, setOffset] = useState(0);
-    const [count, setCount] = useState(12);
+export const Pagination = ({offset, set}: {
+    offset: number,
+    set: CounterActions['set']
+}) => {
 
-    const {data} = useCourse(offset, count);
+    const {data} = useCourse(offset, COUNT);
     if (!data) return null;
 
-    const totalPages = Math.ceil(data.courseCount / count);
-    const currentPage = Math.floor(offset / count) + 1;
+    const totalPages = Math.ceil(data.courseCount / COUNT);
+    const currentPage = Math.floor(offset / COUNT) + 1;
 
     const onPageChange = (pageNum: number) => {
-        setOffset((pageNum - 1) * count);
+        set((pageNum - 1) * COUNT);
     };
 
     const getPageNumbers = () => {
