@@ -6,6 +6,7 @@ import {useRouter} from "next/navigation";
 import AsyncBoundary from "components/AsyncBoundary";
 import {Pagination} from "app/courses/components/widget/Pagination";
 import {useNumber} from "react-use";
+import {DehydratedState, HydrationBoundary} from "@tanstack/react-query";
 
 const CardWrapper = styled.div({
     display: 'grid',
@@ -15,14 +16,15 @@ const CardWrapper = styled.div({
 })
 
 
-export const CoursesWithSuspense = () => {
+export const CoursesWithSuspense = ({dehydrateState}: { dehydrateState: DehydratedState }) => {
     const router = useRouter();
-
-    // AsyncBoundary로 감싸서 로딩, 에러, 성공 상태를 처리
     return (
-        <AsyncBoundary pending={<LoadingFallback/>} rejected={() => <ErrorFallback reset={() => router.refresh()}/>}>
-            <Resolved/>
-        </AsyncBoundary>
+        <HydrationBoundary state={dehydrateState}>
+            <AsyncBoundary pending={<LoadingFallback/>}
+                           rejected={() => <ErrorFallback reset={() => router.refresh()}/>}>
+                <Resolved/>
+            </AsyncBoundary>
+        </HydrationBoundary>
     );
 };
 
