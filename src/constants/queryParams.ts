@@ -1,109 +1,97 @@
 import {z} from 'zod';
-import {createParser, parseAsArrayOf} from 'nuqs';
 
-// 필터 옵션 정의
-export const FILTER_OPTIONS = {
-    COURSE_TYPE: {
-        SUBJECT: {value: '6', label: '주제별'},
-        CHALLENGE: {value: '7', label: '챌린지'},
-        TEST: {value: '8', label: '테스트'},
-    },
-    FORMAT: {
-        FREE_CHOICE: {value: '1', label: '자유 선택'},
-        SEQUENTIAL: {value: '2', label: '순차 학습'},
-    },
-    CATEGORY: {
-        PROGRAMMING_BASICS: {value: '4', label: '프로그래밍 기초'},
-        DATA_ANALYSIS: {value: '5', label: '데이터 분석'},
-        WEB: {value: '6', label: '웹'},
-        AI: {value: '7', label: 'AI'},
-        ALGORITHM: {value: '8', label: '알고리즘'},
-    },
-    LEVEL: {
-        BEGINNER: {value: '11', label: '입문'},
-        ELEMENTARY: {value: '12', label: '초급'},
-        INTERMEDIATE: {value: '13', label: '중급'},
-        ADVANCED: {value: '14', label: '고급'},
-        EXPERT: {value: '15', label: '전문가'},
-    },
-    PROGRAMMING_LANGUAGE: {
-        C: {value: '16', label: 'C'},
-        CPP: {value: '17', label: 'C++'},
-        JAVA: {value: '18', label: 'Java'},
-        PYTHON: {value: '19', label: 'Python'},
-        JAVASCRIPT: {value: '20', label: 'JavaScript'},
-        R: {value: '21', label: 'R'},
-        HTML_CSS: {value: '22', label: 'HTML/CSS'},
-        SQL: {value: '23', label: 'SQL'},
-        ARDUINO: {value: '24', label: 'Arduino'},
-        SCRATCH: {value: '25', label: 'Scratch'},
-        KOTLIN: {value: '26', label: 'Kotlin'},
-        SWIFT: {value: '27', label: 'Swift'},
-        ENT: {value: '28', label: 'ENT'},
-    },
-    PRICE: {
-        FREE: {value: '29', label: '무료'},
-        PAID: {value: '30', label: '유료'},
-        SUBSCRIPTION: {value: '31', label: '구독'},
-        CREDIT: {value: '32', label: '학점'},
-    },
+// 각 필터 옵션 정의
+export const COURSE_TYPES = {
+    SUBJECT: '6',
+    CHALLENGE: '7',
+    TEST: '8',
 } as const;
 
-// QueryParams 타입 정의
-export type QueryParams = {
-    courseType?: string | string[] | undefined;
-    format?: string | string[] | undefined;
-    category?: string | string[] | undefined;
-    level?: string | string[] | undefined;
-    programmingLanguage?: string | string[] | undefined;
-    price?: string | string[] | undefined;
-    tab?: string | undefined;
-    keyword?: string | undefined;
-};
+export const FORMATS = {
+    FREE_CHOICE: '1',
+    SEQUENTIAL: '2',
+} as const;
+
+export const CATEGORIES = {
+    PROGRAMMING_BASICS: '4',
+    DATA_ANALYSIS: '5',
+    WEB: '6',
+    AI: '7',
+    ALGORITHM: '8',
+} as const;
+
+export const LEVELS = {
+    BEGINNER: '11',
+    ELEMENTARY: '12',
+    INTERMEDIATE: '13',
+    ADVANCED: '14',
+    EXPERT: '15',
+} as const;
+
+export const PROGRAMMING_LANGUAGES = {
+    C: '16',
+    CPP: '17',
+    JAVA: '18',
+    PYTHON: '19',
+    JAVASCRIPT: '20',
+    R: '21',
+    HTML_CSS: '22',
+    SQL: '23',
+    ARDUINO: '24',
+    SCRATCH: '25',
+    KOTLIN: '26',
+    SWIFT: '27',
+    ENT: '28',
+} as const;
+
+export const PRICES = {
+    FREE: '29',
+    PAID: '30',
+    SUBSCRIPTION: '31',
+    CREDIT: '32',
+} as const;
+
+// 타입 정의
+export type CourseType = typeof COURSE_TYPES[keyof typeof COURSE_TYPES];
+export type Format = typeof FORMATS[keyof typeof FORMATS];
+export type Category = typeof CATEGORIES[keyof typeof CATEGORIES];
+export type Level = typeof LEVELS[keyof typeof LEVELS];
+export type ProgrammingLanguage = typeof PROGRAMMING_LANGUAGES[keyof typeof PROGRAMMING_LANGUAGES];
+export type Price = typeof PRICES[keyof typeof PRICES];
 
 // Zod 스키마 정의
+export const courseTypeSchema = z.enum(Object.values(COURSE_TYPES) as [CourseType, ...CourseType[]]);
+export const formatSchema = z.enum(Object.values(FORMATS) as [Format, ...Format[]]);
+export const categorySchema = z.enum(Object.values(CATEGORIES) as [Category, ...Category[]]);
+export const levelSchema = z.enum(Object.values(LEVELS) as [Level, ...Level[]]);
+export const programmingLanguageSchema = z.enum(Object.values(PROGRAMMING_LANGUAGES) as [ProgrammingLanguage, ...ProgrammingLanguage[]]);
+export const priceSchema = z.enum(Object.values(PRICES) as [Price, ...Price[]]);
+
+// 쿼리 파라미터 스키마
 export const queryParamsSchema = z.object({
-    courseType: z.string().or(z.array(z.string())).optional(),
-    format: z.string().or(z.array(z.string())).optional(),
-    category: z.string().or(z.array(z.string())).optional(),
-    level: z.string().or(z.array(z.string())).optional(),
-    programmingLanguage: z.string().or(z.array(z.string())).optional(),
-    price: z.string().or(z.array(z.string())).optional(),
-    keyword: z.string().nullable().default(""),
-    tab: z.string().nullable().default("course"),
+    courseType: courseTypeSchema.array().optional(),
+    format: formatSchema.array().optional(),
+    category: categorySchema.array().optional(),
+    level: levelSchema.array().optional(),
+    programmingLanguage: programmingLanguageSchema.array().optional(),
+    price: priceSchema.array().optional(),
+    keyword: z.string().nullable().optional(),
+    tab: z.string().nullable().optional(),
 });
 
-// 단일 값을 위한 파서 생성 함수
-const createFilterParser = () => {
-    return createParser({
-        parse: (value: string) => value || null,
-        serialize: (value: string) => value,
-    });
+export type QueryParams = z.infer<typeof queryParamsSchema>;
+
+// 전체 필터 옵션
+export const FILTER_OPTIONS = {
+    COURSE_TYPE: COURSE_TYPES,
+    FORMAT: FORMATS,
+    CATEGORY: CATEGORIES,
+    LEVEL: LEVELS,
+    PROGRAMMING_LANGUAGE: PROGRAMMING_LANGUAGES,
+    PRICE: PRICES,
 };
 
-// 배열 값을 위한 파서 생성 함수
-const createFilterArrayParser = () => {
-    return parseAsArrayOf(createFilterParser());
-};
-
-// 모든 필터 옵션에 대한 파서 생성
-export const parsers = {
-    courseType: {single: createFilterParser(), array: createFilterArrayParser()},
-    format: {single: createFilterParser(), array: createFilterArrayParser()},
-    category: {single: createFilterParser(), array: createFilterArrayParser()},
-    level: {single: createFilterParser(), array: createFilterArrayParser()},
-    programmingLanguage: {single: createFilterParser(), array: createFilterArrayParser()},
-    price: {single: createFilterParser(), array: createFilterArrayParser()},
-};
-
-
-// 필터 옵션 각각의 카테고리를 위한 이름 매핑(i18n)
-
-export const FILTER_OPTION_LABLE = {
-        COURSE_TYPE: '유형',
-        FORMAT: '진행 방식',
-        CATEGORY: '분야',
-        LEVEL: '난이도',
-        PROGRAMMING_LANGUAGE: '언어',
-        PRICE: '가격',
-};
+// 유틸리티 함수
+export const getFilterOptions = <T extends keyof typeof FILTER_OPTIONS>(key: T) => {
+    return Object.entries(FILTER_OPTIONS[key]).map(([label, value]) => ({label, value}));
+}

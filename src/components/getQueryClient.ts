@@ -1,6 +1,5 @@
-import {QueryClient, isServer} from "@tanstack/react-query"
+import {QueryClient, isServer, defaultShouldDehydrateQuery} from "@tanstack/react-query"
 import ms from "ms"
-import {toast} from "sonner";
 
 function makeQueryClient() {
     return new QueryClient({
@@ -9,11 +8,10 @@ function makeQueryClient() {
                 retry: 0,
                 staleTime: ms("1h"),
             },
-            mutations: {
-                onError: (e) => {
-                    const msg = e.name
-                    toast.error(msg)
-                },
+            dehydrate: {
+                shouldDehydrateQuery: query =>
+                    defaultShouldDehydrateQuery(query) ||
+                    query.state.status === 'pending',
             },
         },
     })

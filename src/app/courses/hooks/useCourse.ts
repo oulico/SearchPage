@@ -1,60 +1,28 @@
 'use client'
-import {useQuery, QueryClient} from '@tanstack/react-query';
+import {useSuspenseQuery, useQueryClient} from '@tanstack/react-query';
 import {BffCourseList} from "app/api/courses/route";
 import {QueryParams} from "constants/queryParams";
 import {useSearchParams} from "next/navigation";
-
-
-export const getCourses = async ({queryParams, offset, count}: {
-    queryParams: QueryParams,
-    offset: number,
-    count: number
-}): Promise<BffCourseList> => {
-
-    //객체를 쿼리스트링으로 변환. 근데 중복된 키를 사용하도록 하기.
-    const searchParams = new URLSearchParams();
-    Object.entries(queryParams).forEach(([key, value]) => {
-        if (Array.isArray(value)) {
-            value.forEach(v => searchParams.append(key, v));
-        } else if (value !== undefined) {
-            searchParams.append(key, value);
-        }
-    });
-
-    const url = `/api/courses?${searchParams.toString()}&offset=${offset}&count=${count}`
-
-    const response = await fetch(url, {
-        credentials: 'include',
-        headers: {
-            'Content-Type': 'application/json',
-        },
-    });
-
-    if (!response.ok) {
-        throw new Error('Failed to fetch courses');
-    }
-
-    return await response.json();
-};
+import {getCourses} from "./utils/getCourses";
+import {useEffect} from "react";
 
 export const useCourse = (offset = 0, count = 12) => {
-    console.log(offset)
     const searchParams = useSearchParams();
+    const queryClient = useQueryClient();
 
-    const queryParams: QueryParams = {};
+    const queryParams: Partial<QueryParams> = {};
+
     searchParams.forEach((value, key) => {
         if (key in queryParams) {
-            // @ts-expect-error TODO 인덱스 키로 문자열을 사용할 수 없기 때문에, 좀 더 유연하게 타입을 만들어줘야한다.
-            if (Array.isArray(queryParams[key])) {
-                // @ts-expect-error 인덱스 키로 문자열을 사용할 수 없기 때문에, 좀 더 유연하게 타입을 만들어줘야한다.
-                (queryParams[key] as string[]).push(value);
+            if (Array.isArray(queryParams[key as keyof QueryParams])) {
+                (queryParams[key as keyof QueryParams] as string[]).push(value);
             } else {
-                // @ts-expect-error 인덱스 키로 문자열을 사용할 수 없기 때문에, 좀 더 유연하게 타입을 만들어줘야한다.
-                queryParams[key] = [queryParams[key] as string, value];
+                // @ts-expect-error TODO 타입 수정
+                queryParams[key as keyof QueryParams] = [queryParams[key as keyof QueryParams] as string, value];
             }
         } else {
-            // @ts-expect-error 인덱스 키로 문자열을 사용할 수 없기 때문에, 좀 더 유연하게 타입을 만들어줘야한다.
-            queryParams[key] = value;
+            // @ts-expect-error TODO 타입 수정
+            queryParams[key as keyof QueryParams] = value;
         }
     });
 
@@ -65,29 +33,42 @@ export const useCourse = (offset = 0, count = 12) => {
         .forEach(([key, value]) => {
             if (Array.isArray(value)) {
                 value.forEach(v => sortedSearchParams.append(key, v));
-            } else if (value !== undefined) {
-                sortedSearchParams.append(key, value);
+            } else if (value !== undefined && value !== null) {
+                sortedSearchParams.append(key, value as string);
             }
         });
 
     const sortedQueryString = sortedSearchParams.toString();
 
-    return useQuery<BffCourseList, Error>({
+    // 프리페칭 함수
+    const prefetchPages = async (prefetchOffsets: number[]) => {
+        const prefetchPromises = prefetchOffsets.map(prefetchOffset =>
+            queryClient.prefetchQuery({
+                queryKey: ['courses', sortedQueryString, prefetchOffset, count],
+                queryFn: () => getCourses({queryParams, offset: prefetchOffset, count}),
+            })
+        );
+        await Promise.all(prefetchPromises);
+    };
+
+    // 현재 페이지 데이터 쿼리
+    const query = useSuspenseQuery<BffCourseList, Error>({
         queryKey: ['courses', sortedQueryString, offset, count],
         queryFn: () => getCourses({queryParams, offset, count}),
     });
-};
 
-export const prefetchCoursesData = async (
-    queryClient: QueryClient,
-    queryParams: QueryParams
-) => {
+    // 프리페칭 실행
+    useEffect(() => {
+        const prefetchOffsets = [];
+        if (offset === 0) {
+            // 오프셋이 0일 때 오른쪽으로 4페이지 프리페치
+            prefetchOffsets.push(...[1, 2, 3, 4].map(n => n * count));
+        } else {
+            // 왼쪽 2페이지, 오른쪽 2페이지 프리페치
+            prefetchOffsets.push(...[-2, -1, 1, 2].map(n => offset + n * count).filter(o => o >= 0));
+        }
+        prefetchPages(prefetchOffsets);
+    }, [offset, count, sortedQueryString]);
 
-    const sortedQueryParams = Object.fromEntries(Object.entries(queryParams).sort());
-    const stringifiedQueryParams = JSON.stringify(sortedQueryParams);
-
-    await queryClient.prefetchQuery({
-        queryKey: ['courses', stringifiedQueryParams],
-        queryFn: () => getCourses({queryParams, offset: 0, count: 20}),
-    });
+    return query;
 };
