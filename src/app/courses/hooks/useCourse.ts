@@ -17,9 +17,11 @@ export const useCourse = (offset = 0, count = 12) => {
             if (Array.isArray(queryParams[key as keyof QueryParams])) {
                 (queryParams[key as keyof QueryParams] as string[]).push(value);
             } else {
+                // @ts-expect-error TODO 타입 수정
                 queryParams[key as keyof QueryParams] = [queryParams[key as keyof QueryParams] as string, value];
             }
         } else {
+            // @ts-expect-error TODO 타입 수정
             queryParams[key as keyof QueryParams] = value;
         }
     });
