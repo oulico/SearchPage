@@ -38,6 +38,7 @@ export const getCourses = async ({queryParams, offset, count}: {
 };
 
 export const useCourse = (offset = 0, count = 12) => {
+    console.log(offset)
     const searchParams = useSearchParams();
 
     const queryParams: QueryParams = {};
