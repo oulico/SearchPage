@@ -30,16 +30,26 @@ const FilterTable = styled.table({
         width: '100px',
     },
     'th, td': {
-        border: '1px solid',
-        borderCollapse: 'collapse',
-        borderColor: colors.gray[200],
         padding: '8px',
         textAlign: 'left',
+
     },
+    'th:first-of-type': {
+        width: '100px',
+        borderRight: '1px solid',
+        borderColor: colors.gray[200],
+    },
+    'tr': {
+        border: '1px solid',
+        borderColor: colors.gray[200],
+    }
 });
 
 const TD = styled.td({
     display: 'flex',
+    border: '1px solid',
+    //eliminate the border between the cells
+    border: 'none',
     flexWrap: 'wrap',
     gap: '4px',
 });
@@ -55,7 +65,7 @@ const ErrorFallback: React.FC<{ reset: () => void }> = ({reset}) => (
 
 
 const Resolved: React.FC = () => {
-    const { queries, addToQuery, removeFromQuery } = useQueryParams();
+    const {queries, addToQuery, removeFromQuery} = useQueryParams();
 
     const handleToggle = (key: keyof QueryParams, optionId: string) => {
         const currentValues = queries[key];
@@ -88,7 +98,7 @@ const Resolved: React.FC = () => {
                     const firstOption = Object.values(options)[0];
                     return (
                         <tr key={key}>
-                            <th className="fixed-width">{firstOption.label}</th>
+                            <th className="fixed-width">{key}</th>
                             <TD>{renderToggleButtons(key)}</TD>
                         </tr>
                     );

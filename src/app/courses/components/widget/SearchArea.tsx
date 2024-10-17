@@ -29,11 +29,13 @@ const Resolved: React.FC = () => {
     return (
         <div>
             <InputGroup>
-                <InputLeftElement pointerEvents="none">
-                    <SearchIcon color="black" size={24}/>
+                <InputLeftElement height={'48px'}>
+                    <SearchIcon color="black" size={16}/>
                 </InputLeftElement>
                 <Input
                     type="text"
+                    borderRadius={4}
+                    height={'48px'}
                     placeholder="배우고 싶은 언어, 기술을 검색해 보세요"
                     defaultValue={keyword || ''}
                     onChange={(e) => setKeyword(e.target.value)}

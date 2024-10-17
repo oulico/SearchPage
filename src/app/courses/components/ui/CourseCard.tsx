@@ -12,25 +12,26 @@ export const CourseCard = ({course}: { course: BffCourse }) => {
 
     return (
         <Card maxW='sm' height={'100%'}>
-            <CardBody>
+            <CardBody padding={0}>
                 <Box
-                    width={isLogoImage ? '50%' : '100%'}
                     margin={isLogoImage ? 'auto' : '0'}
                 >
                     <Img
                         src={imageUrl || placeholderImageUrl}
                         alt={course.title}
-                        borderRadius='lg'
-                        objectFit="cover"
+                        objectFit="contain"
+                        borderTopRadius={'md'}
                         width="100%"
-                        height={isLogoImage ? "auto" : "200px"}
+                        height={isLogoImage ? "auto" : "155px"}
                     />
                 </Box>
                 <Stack mt='6' spacing='3'>
-                    <Heading size='md'>{course.title}</Heading>
-                    <Text>
-                        {course.shortDescription}
-                    </Text>
+                    <Box margin={'12px'}>
+                        <Heading size='md'>{course.title}</Heading>
+                        <Text>
+                            {course.shortDescription}
+                        </Text>
+                    </Box>
                 </Stack>
             </CardBody>
             <CardFooter>
