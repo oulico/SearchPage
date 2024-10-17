@@ -2,18 +2,15 @@
 import {CourseCard} from "app/courses/components/ui/CourseCard";
 import {useCourse} from "app/courses/hooks/useCourse";
 import styled from "@emotion/styled";
-import {useQueryState, parseAsInteger, parseAsString, parseAsJson,} from "nuqs";
 import {useRouter} from "next/navigation";
 import AsyncBoundary from "components/AsyncBoundary";
-import {parsers, queryParamsSchema} from "constants/queryParams";
 
-const CardWrapper = styled.div`
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-    gap: 1rem;
-    padding-top: 3rem;
-`;
-//TODO 객체 스타일로 변경하기
+const CardWrapper = styled.div({
+    display: 'grid',
+    gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))',
+    gap: '1rem',
+    paddingTop: '3rem',
+})
 
 
 export const CoursesWithSuspense = () => {
@@ -29,12 +26,8 @@ export const CoursesWithSuspense = () => {
 
 
 const Resolved: React.FC = () => {
-    // const [query] = useQueryState('zod', parseAsJson(queryParamsSchema.parse));
-    // console.log('query look like this', query)
-    // const filterConditions = query;
 
     const {data} = useCourse();
-
     if (!data || !data.courses) return null;
 
     return (

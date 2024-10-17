@@ -2,7 +2,7 @@
 
 import React from "react";
 import {useRouter} from 'next/navigation';
-import {FILTER_OPTIONS, QueryParams} from 'constants/queryParams';
+import {FILTER_OPTIONS, FILTER_OPTION_LABLE, QueryParams} from 'constants/queryParams';
 import {ToggleButton} from "app/courses/components/ui/ToggleButton";
 import AsyncBoundary from "components/AsyncBoundary";
 import styled from "@emotion/styled";
@@ -10,11 +10,12 @@ import {colors} from 'constants/styleScheme'
 import {useQueryParams} from 'hooks/useQueryParams';
 
 type FilterKey = keyof typeof FILTER_OPTIONS;
-type FilterOption = {
-    value: string;
-    label: string;
+type FilterOptionLabelKey = keyof typeof FILTER_OPTION_LABLE;
+
+const getLabel = (key: FilterKey): string => {
+    const upperKey = key.toUpperCase() as FilterOptionLabelKey;
+    return FILTER_OPTION_LABLE[upperKey] || key;
 };
-type FilterOptionGroup = Record<string, FilterOption>;
 
 const FilterWrapper = styled.div({
     paddingTop: '12px',
@@ -47,8 +48,6 @@ const FilterTable = styled.table({
 
 const TD = styled.td({
     display: 'flex',
-    border: '1px solid',
-    //eliminate the border between the cells
     border: 'none',
     flexWrap: 'wrap',
     gap: '4px',
@@ -89,16 +88,15 @@ const Resolved: React.FC = () => {
         ));
     };
 
+
     return (
         <FilterWrapper>
             <FilterTable role="grid" aria-labelledby="filter-table-title">
                 <tbody>
                 {(Object.keys(FILTER_OPTIONS) as FilterKey[]).map(key => {
-                    const options = FILTER_OPTIONS[key] as FilterOptionGroup;
-                    const firstOption = Object.values(options)[0];
                     return (
                         <tr key={key}>
-                            <th className="fixed-width">{key}</th>
+                            <th className="fixed-width">{getLabel(key)}</th>
                             <TD>{renderToggleButtons(key)}</TD>
                         </tr>
                     );

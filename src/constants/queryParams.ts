@@ -95,3 +95,15 @@ export const parsers = {
     programmingLanguage: {single: createFilterParser(), array: createFilterArrayParser()},
     price: {single: createFilterParser(), array: createFilterArrayParser()},
 };
+
+
+// 필터 옵션 각각의 카테고리를 위한 이름 매핑(i18n)
+
+export const FILTER_OPTION_LABLE = {
+        COURSE_TYPE: '유형',
+        FORMAT: '진행 방식',
+        CATEGORY: '분야',
+        LEVEL: '난이도',
+        PROGRAMMING_LANGUAGE: '언어',
+        PRICE: '가격',
+};
