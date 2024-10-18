@@ -10,5 +10,7 @@ export const getBaseURL = () => {
         return `http://localhost:3000`
     } else if (isProd()) {
         return `https://${HOST}`
+    } else {
+        return `https://elice-searchpage-clone-v1-606n4e41p-oulicos-projects.vercel.app`
     }
 }
