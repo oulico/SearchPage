@@ -4,12 +4,12 @@ import {getCourses} from "./getCourses";
 
 export const prefetchCoursesData = async (
     queryClient: QueryClient,
-    searchParams: URLSearchParams
+    searchParams2222: URLSearchParams
 ) => {
     const queryParams: Partial<QueryParams> = {};
     // TODO : Do not repeat yourself
     // 객체를 순환하려면 Object.entries를 사용해야함
-    Object.entries(searchParams).forEach(([key, value]) => {
+    Object.entries(searchParams2222).forEach(([key, value]) => {
         if (key in queryParams) {
             if (Array.isArray(queryParams[key as keyof QueryParams])) {
                 (queryParams[key as keyof QueryParams] as string[]).push(value);

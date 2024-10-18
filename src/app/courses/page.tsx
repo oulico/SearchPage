@@ -1,13 +1,16 @@
-import {dehydrate} from '@tanstack/react-query';
-import {getQueryClient} from "utils/get-query-client";
-import {CoursesPageClient} from "app/courses/components/pages/CoursesPageClient";
+import {dehydrate, HydrationBoundary, QueryClient} from '@tanstack/react-query';
+// import {CoursesPageClient} from "app/courses/components/pages/CoursesPageClient";
 import {prefetchCoursesData} from "app/courses/hooks/utils/prefetchCoursesData";
+import {SearchAreaWithSuspense} from "app/courses/components/widget/SearchArea";
+import {FilterWithSuspense} from "app/courses/components/widget/Filter";
+import {CoursesWithSuspense} from "app/courses/components/widget/CoursesWithSuspense";
 
+export const dynamic = 'force-dynamic'; // 이 라인을 추가하여 항상 동적으로 렌더링되도록 설정
 
 export default async function CoursesPageServer({searchParams}: {
     searchParams: URLSearchParams
 }) {
-    const queryClient = getQueryClient();
+    const queryClient = new QueryClient();
     // const searchParams = new URLSearchParams();
 
     try {
@@ -22,6 +25,18 @@ export default async function CoursesPageServer({searchParams}: {
 
     const dehydratedState = dehydrate(queryClient);
 
-    // return <CoursesPageClient dehydratedState={dehydrate(queryClient)} initialPage={page}/>;
-    return <CoursesPageClient dehydratedState={dehydratedState}/>;
+    // return (
+    //     <HydrationBoundary state={dehydratedState}>
+    //         <CoursesPageClient/>
+    //     </HydrationBoundary>
+    // )
+    return (
+        <>
+            <SearchAreaWithSuspense/>
+            <FilterWithSuspense/>
+            <HydrationBoundary state={dehydratedState}>
+                <CoursesWithSuspense/>
+            </HydrationBoundary>
+        </>
+    )
 }

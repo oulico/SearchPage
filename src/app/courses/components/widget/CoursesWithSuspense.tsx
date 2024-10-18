@@ -2,11 +2,10 @@
 import {CourseCard} from "app/courses/components/ui/CourseCard";
 import {useCourse} from "app/courses/hooks/useCourse";
 import styled from "@emotion/styled";
-import {useRouter} from "next/navigation";
-import AsyncBoundary from "components/AsyncBoundary";
+// import {useRouter} from "next/navigation";
+// import AsyncBoundary from "components/AsyncBoundary";
 import {Pagination} from "app/courses/components/widget/Pagination";
 import {useNumber} from "react-use";
-import {DehydratedState, HydrationBoundary} from "@tanstack/react-query";
 
 const CardWrapper = styled.div({
     display: 'grid',
@@ -16,15 +15,13 @@ const CardWrapper = styled.div({
 })
 
 
-export const CoursesWithSuspense = ({dehydrateState}: { dehydrateState: DehydratedState }) => {
-    const router = useRouter();
+export const CoursesWithSuspense = () => {
+    // const router = useRouter();
     return (
-        <HydrationBoundary state={dehydrateState}>
-            <AsyncBoundary pending={<LoadingFallback/>}
-                           rejected={() => <ErrorFallback reset={() => router.refresh()}/>}>
-                <Resolved/>
-            </AsyncBoundary>
-        </HydrationBoundary>
+        // <AsyncBoundary pending={<LoadingFallback/>}
+        //                rejected={() => <ErrorFallback reset={() => router.refresh()}/>}>
+        <Resolved/>
+        // </AsyncBoundary>
     );
 };
 
@@ -48,15 +45,15 @@ const Resolved: React.FC = () => {
     );
 };
 
-const LoadingFallback: React.FC = () => {
-    return <div>Loading courses...</div>;
-};
-
-const ErrorFallback: React.FC<{ reset: () => void }> = ({reset}) => {
-    return (
-        <div>
-            <p>Error loading courses. Please try again later.</p>
-            <button onClick={reset}>Try again</button>
-        </div>
-    );
-};
+// const LoadingFallback: React.FC = () => {
+//     return <div>Loading courses...</div>;
+// };
+//
+// const ErrorFallback: React.FC<{ reset: () => void }> = ({reset}) => {
+//     return (
+//         <div>
+//             <p>Error loading courses. Please try again later.</p>
+//             <button onClick={reset}>Try again</button>
+//         </div>
+//     );
+// };
