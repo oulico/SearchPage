@@ -6,16 +6,10 @@ export const prefetchCoursesData = async (
     queryClient: QueryClient,
     searchParams: URLSearchParams
 ) => {
-    //    const searchParams = useSearchParams();
-    //     const queryClient = useQueryClient();
-    //
     const queryParams: Partial<QueryParams> = {};
-    //
-    //search params: { keyword: '', programming_language: [ '17', '16' ] }
-    // forEach를 쓸 수 없음 객체를 순환하려면 Object.entries를 사용해야함
+    // TODO : Do not repeat yourself
+    // 객체를 순환하려면 Object.entries를 사용해야함
     Object.entries(searchParams).forEach(([key, value]) => {
-
-        // searchParams.forEach((value, key) => {
         if (key in queryParams) {
             if (Array.isArray(queryParams[key as keyof QueryParams])) {
                 (queryParams[key as keyof QueryParams] as string[]).push(value);
@@ -24,12 +18,11 @@ export const prefetchCoursesData = async (
                 queryParams[key as keyof QueryParams] = [queryParams[key as keyof QueryParams] as string, value];
             }
         } else {
-            // @ts-expect-error TODO 타입 수정
             queryParams[key as keyof QueryParams] = value;
         }
     });
-    //
-    //     // 정렬된 쿼리 문자열 생성
+
+    // 정렬된 쿼리 문자열 생성
     const sortedSearchParams = new URLSearchParams();
     Object.entries(queryParams)
         .sort(([a], [b]) => a.localeCompare(b))
