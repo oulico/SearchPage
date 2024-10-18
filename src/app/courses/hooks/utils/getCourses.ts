@@ -33,6 +33,7 @@ export const getCourses = async ({queryParams, offset, count}: {
             headers: {
                 'Content-Type': 'application/json',
             },
+            next: {revalidate: 86400}
         });
 
         if (!response.ok) {
