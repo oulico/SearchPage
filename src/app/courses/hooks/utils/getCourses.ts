@@ -1,5 +1,6 @@
 import {QueryParams} from "constants/queryParams";
 import {BffCourseList} from "app/api/courses/route";
+import {getBaseURL} from "utils/getBaseURL";
 
 export const getCourses = async ({queryParams, offset, count}: {
     queryParams: QueryParams,
@@ -17,7 +18,9 @@ export const getCourses = async ({queryParams, offset, count}: {
         }
     });
 
-    const url = `/api/courses?${searchParams.toString()}&offset=${offset}&count=${count}`
+    const url = getBaseURL() + `/api/courses?${searchParams.toString()}&offset=${offset}&count=${count}`
+    console.log('url:', url)
+    console.log('decoded:', decodeURIComponent(url))
 
     const response = await fetch(url, {
         credentials: 'include',
