@@ -4,6 +4,7 @@ import {prefetchCoursesData} from "app/courses/hooks/utils/prefetchCoursesData";
 import {SearchAreaWithSuspense} from "app/courses/components/widget/SearchArea";
 import {FilterWithSuspense} from "app/courses/components/widget/Filter";
 import {CoursesWithSuspense} from "app/courses/components/widget/CoursesWithSuspense";
+import {Suspense} from "react";
 
 // export const dynamic = 'force-dynamic'; // 이 라인을 추가하여 항상 동적으로 렌더링되도록 설정
 
@@ -31,10 +32,16 @@ export default async function CoursesPageServer() {
     // )
     return (
         <>
-            <SearchAreaWithSuspense/>
-            <FilterWithSuspense/>
+            <Suspense fallback={<div>Loading...</div>}>
+                <SearchAreaWithSuspense/>
+            </Suspense>
+            <Suspense fallback={<div>Loading...</div>}>
+                <FilterWithSuspense/>
+            </Suspense>
             <HydrationBoundary state={dehydratedState}>
-                <CoursesWithSuspense/>
+                <Suspense fallback={<div>Loading...</div>}>
+                    <CoursesWithSuspense/>
+                </Suspense>
             </HydrationBoundary>
         </>
     )
