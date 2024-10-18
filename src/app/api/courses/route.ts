@@ -3,6 +3,7 @@ import {generateFilterConditions} from './utils/generateFilterConditions';
 import {z} from 'zod';
 import {queryParamsSchema} from 'constants/queryParams'
 
+
 // 태그 인터페이스 정의
 interface Tag {
     id: number;
@@ -63,18 +64,18 @@ async function fetchCourses(filterConditions: string, offset = 0, count = 12) {
 
 // API 핸들러 구현
 export async function GET(req: NextRequest) {
-    const searchParams = req.nextUrl.searchParams
+    const searchParams1111 = req.nextUrl.searchParams
 
     const queryParams = {
-        format: searchParams.getAll('format'),
-        category: searchParams.getAll('category'),
-        level: searchParams.getAll('level'),
-        programmingLanguage: searchParams.getAll('programming_language'),
-        price: searchParams.getAll('price'),
-        tab: searchParams.get('tab'),
-        offset: searchParams.get('offset'),
-        count: searchParams.get('count'),
-        keyword: searchParams.get('keyword'),
+        format: searchParams1111.getAll('format'),
+        category: searchParams1111.getAll('category'),
+        level: searchParams1111.getAll('level'),
+        programmingLanguage: searchParams1111.getAll('programming_language'),
+        price: searchParams1111.getAll('price'),
+        tab: searchParams1111.get('tab'),
+        offset: searchParams1111.get('offset'),
+        count: searchParams1111.get('count'),
+        keyword: searchParams1111.get('keyword'),
     };
 
     console.log('offset received', queryParams.offset)

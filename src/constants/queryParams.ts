@@ -1,18 +1,18 @@
 import {z} from 'zod';
 
 // 각 필터 옵션 정의
-export const COURSE_TYPES = {
+export const COURSE_TYPE = {
     SUBJECT: '6',
     CHALLENGE: '7',
     TEST: '8',
 } as const;
 
-export const FORMATS = {
+export const FORMAT = {
     FREE_CHOICE: '1',
     SEQUENTIAL: '2',
 } as const;
 
-export const CATEGORIES = {
+export const CATEGORY = {
     PROGRAMMING_BASICS: '4',
     DATA_ANALYSIS: '5',
     WEB: '6',
@@ -20,7 +20,7 @@ export const CATEGORIES = {
     ALGORITHM: '8',
 } as const;
 
-export const LEVELS = {
+export const LEVEL = {
     BEGINNER: '11',
     ELEMENTARY: '12',
     INTERMEDIATE: '13',
@@ -28,7 +28,7 @@ export const LEVELS = {
     EXPERT: '15',
 } as const;
 
-export const PROGRAMMING_LANGUAGES = {
+export const PROGRAMMING_LANGUAGE = {
     C: '16',
     CPP: '17',
     JAVA: '18',
@@ -44,7 +44,7 @@ export const PROGRAMMING_LANGUAGES = {
     ENT: '28',
 } as const;
 
-export const PRICES = {
+export const PRICE = {
     FREE: '29',
     PAID: '30',
     SUBSCRIPTION: '31',
@@ -52,20 +52,20 @@ export const PRICES = {
 } as const;
 
 // 타입 정의
-export type CourseType = typeof COURSE_TYPES[keyof typeof COURSE_TYPES];
-export type Format = typeof FORMATS[keyof typeof FORMATS];
-export type Category = typeof CATEGORIES[keyof typeof CATEGORIES];
-export type Level = typeof LEVELS[keyof typeof LEVELS];
-export type ProgrammingLanguage = typeof PROGRAMMING_LANGUAGES[keyof typeof PROGRAMMING_LANGUAGES];
-export type Price = typeof PRICES[keyof typeof PRICES];
+export type CourseType = typeof COURSE_TYPE[keyof typeof COURSE_TYPE];
+export type Format = typeof FORMAT[keyof typeof FORMAT];
+export type Category = typeof CATEGORY[keyof typeof CATEGORY];
+export type Level = typeof LEVEL[keyof typeof LEVEL];
+export type ProgrammingLanguage = typeof PROGRAMMING_LANGUAGE[keyof typeof PROGRAMMING_LANGUAGE];
+export type Price = typeof PRICE[keyof typeof PRICE];
 
 // Zod 스키마 정의
-export const courseTypeSchema = z.enum(Object.values(COURSE_TYPES) as [CourseType, ...CourseType[]]);
-export const formatSchema = z.enum(Object.values(FORMATS) as [Format, ...Format[]]);
-export const categorySchema = z.enum(Object.values(CATEGORIES) as [Category, ...Category[]]);
-export const levelSchema = z.enum(Object.values(LEVELS) as [Level, ...Level[]]);
-export const programmingLanguageSchema = z.enum(Object.values(PROGRAMMING_LANGUAGES) as [ProgrammingLanguage, ...ProgrammingLanguage[]]);
-export const priceSchema = z.enum(Object.values(PRICES) as [Price, ...Price[]]);
+export const courseTypeSchema = z.enum(Object.values(COURSE_TYPE) as [CourseType, ...CourseType[]]);
+export const formatSchema = z.enum(Object.values(FORMAT) as [Format, ...Format[]]);
+export const categorySchema = z.enum(Object.values(CATEGORY) as [Category, ...Category[]]);
+export const levelSchema = z.enum(Object.values(LEVEL) as [Level, ...Level[]]);
+export const programmingLanguageSchema = z.enum(Object.values(PROGRAMMING_LANGUAGE) as [ProgrammingLanguage, ...ProgrammingLanguage[]]);
+export const priceSchema = z.enum(Object.values(PRICE) as [Price, ...Price[]]);
 
 // 쿼리 파라미터 스키마
 export const queryParamsSchema = z.object({
@@ -79,16 +79,27 @@ export const queryParamsSchema = z.object({
     tab: z.string().nullable().optional(),
 });
 
-export type QueryParams = z.infer<typeof queryParamsSchema>;
+// 전체 쿼리 파라미터 타입
+export type QueryParams = {
+    courseType?: CourseType[];
+    format?: Format[];
+    category?: Category[];
+    level?: Level[];
+    programmingLanguage?: ProgrammingLanguage[];
+    price?: Price[];
+    keyword?: string | null;
+    tab?: string | null;
+};
+// }
 
 // 전체 필터 옵션
 export const FILTER_OPTIONS = {
-    COURSE_TYPE: COURSE_TYPES,
-    FORMAT: FORMATS,
-    CATEGORY: CATEGORIES,
-    LEVEL: LEVELS,
-    PROGRAMMING_LANGUAGE: PROGRAMMING_LANGUAGES,
-    PRICE: PRICES,
+    COURSE_TYPE,
+    FORMAT,
+    CATEGORY,
+    LEVEL,
+    PROGRAMMING_LANGUAGE,
+    PRICE,
 };
 
 // 유틸리티 함수

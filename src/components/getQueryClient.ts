@@ -1,3 +1,5 @@
+'use client'
+
 import {QueryClient, isServer, defaultShouldDehydrateQuery} from "@tanstack/react-query"
 import ms from "ms"
 

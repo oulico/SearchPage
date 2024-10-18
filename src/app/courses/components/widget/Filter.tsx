@@ -1,14 +1,14 @@
 'use client'
 
 import React from "react";
-import {useRouter} from 'next/navigation';
+// import {useRouter} from 'next/navigation';
 import {
     FILTER_OPTIONS,
     QueryParams,
     getFilterOptions,
 } from 'constants/queryParams';
 import {ToggleButton} from "app/courses/components/ui/ToggleButton";
-import AsyncBoundary from "components/AsyncBoundary";
+// import AsyncBoundary from "components/AsyncBoundary";
 import styled from "@emotion/styled";
 import {colors} from 'constants/styleScheme'
 import {useQueryParams} from 'hooks/useQueryParams';
@@ -52,14 +52,14 @@ const TD = styled.td({
     gap: '4px',
 });
 
-const LoadingFallback: React.FC = () => <div>Loading filter...</div>;
+// const LoadingFallback: React.FC = () => <div>Loading filter...</div>;
 
-const ErrorFallback: React.FC<{ reset: () => void }> = ({reset}) => (
-    <div>
-        <p>Error loading filters. Please try again later.</p>
-        <button onClick={reset}>Try again</button>
-    </div>
-);
+// const ErrorFallback: React.FC<{ reset: () => void }> = ({reset}) => (
+//     <div>
+//         <p>Error loading filters. Please try again later.</p>
+//         <button onClick={reset}>Try again</button>
+//     </div>
+// );
 
 
 const Resolved: React.FC = () => {
@@ -115,14 +115,14 @@ const Resolved: React.FC = () => {
 };
 
 export const FilterWithSuspense: React.FC = () => {
-    const router = useRouter();
+    // const router = useRouter();
 
     return (
-        <AsyncBoundary
-            pending={<LoadingFallback/>}
-            rejected={() => <ErrorFallback reset={() => router.refresh()}/>}
-        >
-            <Resolved/>
-        </AsyncBoundary>
+        // <AsyncBoundary
+        //     pending={<LoadingFallback/>}
+        //     rejected={() => <ErrorFallback reset={() => router.refresh()}/>}
+        // >
+        <Resolved/>
+        // </AsyncBoundary>
     );
 };
