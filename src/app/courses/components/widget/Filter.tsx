@@ -64,6 +64,7 @@ const TD = styled.td({
 
 const Resolved: React.FC = () => {
     const {queries, addToQuery, removeFromQuery} = useQueryParams();
+    console.log('queries:', queries);
 
     const handleToggle = (key: keyof QueryParams, optionId: string) => {
         const currentValues = queries[key];
