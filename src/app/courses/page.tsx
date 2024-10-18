@@ -5,13 +5,12 @@ import {SearchAreaWithSuspense} from "app/courses/components/widget/SearchArea";
 import {FilterWithSuspense} from "app/courses/components/widget/Filter";
 import {CoursesWithSuspense} from "app/courses/components/widget/CoursesWithSuspense";
 
-export const dynamic = 'force-dynamic'; // 이 라인을 추가하여 항상 동적으로 렌더링되도록 설정
+// export const dynamic = 'force-dynamic'; // 이 라인을 추가하여 항상 동적으로 렌더링되도록 설정
 
-export default async function CoursesPageServer({searchParams}: {
-    searchParams: URLSearchParams
-}) {
+export default async function CoursesPageServer() {
     const queryClient = new QueryClient();
-    // const searchParams = new URLSearchParams();
+    const searchParams = new URLSearchParams();
+    // 하드코딩하기.
 
     try {
         console.log('Starting prefetching');
