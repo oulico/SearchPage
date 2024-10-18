@@ -7,12 +7,12 @@ import {getCourses} from "./utils/getCourses";
 import {useEffect} from "react";
 
 export const useCourse = (offset = 0, count = 12) => {
-    const searchParamsSSSSS = useSearchParams();
+    const searchParams = useSearchParams();
     const queryClient = useQueryClient();
 
     const queryParams: Partial<QueryParams> = {};
 
-    searchParamsSSSSS.forEach((value, key) => {
+    searchParams.forEach((value, key) => {
         if (key in queryParams) {
             if (Array.isArray(queryParams[key as keyof QueryParams])) {
                 (queryParams[key as keyof QueryParams] as string[]).push(value);

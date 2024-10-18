@@ -5,7 +5,7 @@ import {isVercel} from "utils/isVercel"
 
 export const getBaseURL = () => {
     if (isVercel()) {
-        return `https://${process.env.VERCEL_URL}`;
+        return `https://${process.env.VERCEL_URL || process.env.NEXT_PUBLIC_VERCEL_URL}`;
     } else if (isLocal()) {
         return `http://localhost:3000`
     } else if (isProd()) {

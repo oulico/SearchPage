@@ -7,10 +7,10 @@ import {QueryParams} from 'constants/queryParams';
 export function useQueryParams() {
     const router = useRouter();
     const pathname = usePathname();
-    const searchParams9999 = useSearchParams();
+    const searchParams = useSearchParams();
 
     const setQuery = useCallback((key: keyof QueryParams, value: string | string[] | null) => {
-        const params = new URLSearchParams(searchParams9999);
+        const params = new URLSearchParams(searchParams);
         params.delete(key);
         if (value !== null) {
             if (Array.isArray(value)) {
@@ -20,25 +20,25 @@ export function useQueryParams() {
             }
         }
         router.push(`${pathname}?${params.toString()}`, {scroll: false});
-    }, [router, pathname, searchParams9999]);
+    }, [router, pathname, searchParams]);
 
     const addToQuery = useCallback((key: keyof QueryParams, value: string) => {
-        const params = new URLSearchParams(searchParams9999);
+        const params = new URLSearchParams(searchParams);
         params.append(key, value);
         router.push(`${pathname}?${params.toString()}`, {scroll: false});
-    }, [router, pathname, searchParams9999]);
+    }, [router, pathname, searchParams]);
 
     const removeFromQuery = useCallback((key: keyof QueryParams, value: string) => {
-        const params = new URLSearchParams(searchParams9999);
+        const params = new URLSearchParams(searchParams);
         const values = params.getAll(key).filter(v => v !== value);
         params.delete(key);
         values.forEach(v => params.append(key, v));
         router.push(`${pathname}?${params.toString()}`, {scroll: false});
-    }, [router, pathname, searchParams9999]);
+    }, [router, pathname, searchParams]);
 
     const getQuery = useCallback((key: keyof QueryParams): string[] => {
-        return searchParams9999.getAll(key);
-    }, [searchParams9999]);
+        return searchParams.getAll(key);
+    }, [searchParams]);
 
     const queries = new Proxy({} as Record<keyof QueryParams, string[]>, {
         get: (target, prop: string) => getQuery(prop as keyof QueryParams),

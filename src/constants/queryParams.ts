@@ -90,6 +90,17 @@ export type QueryParams = {
     keyword?: string | null;
     tab?: string | null;
 };
+
+// export type QueryParams = {
+//     courseType?: string[];
+//     format?: string[];
+//     category?: string[];
+//     level?: string[];
+//     programmingLanguage?: string[];
+//     price?: Price[];
+//     keyword?: string | null;
+//     tab?: string | null;
+// };
 // }
 
 // 전체 필터 옵션
