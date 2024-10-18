@@ -29,8 +29,11 @@ export const CoursesWithSuspense = () => {
 const Resolved: React.FC = () => {
 
     const [offset, {set}] = useNumber(0);
-    const {data} = useCourse(offset);
+    const {data,isLoading, error} = useCourse(offset);
     if (!data || !data.courses) return null;
+
+    if (isLoading) return <div>Loading...</div>;
+    if (error) return <div>Error: {error.message}</div>;
 
     return (
         <>
