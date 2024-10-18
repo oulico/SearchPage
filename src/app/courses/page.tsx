@@ -10,12 +10,9 @@ import {Suspense} from "react";
 // 하루마다 재검증
 export const revalidate = 86400;
 
-
-export default async function CoursesPageServer({searchParams}: {
-    searchParams: URLSearchParams
-}) {
+export default async function CoursesPageServer() {
     const queryClient = new QueryClient();
-    // const searchParams = new URLSearchParams();
+    const searchParams = new URLSearchParams();
     // 하드코딩하기.
     // searchParams를 사용하면, 항상 동적으로 렌더링된다. 느리다!
 
