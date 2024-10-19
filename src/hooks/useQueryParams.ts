@@ -4,7 +4,6 @@ import {useState, useEffect, useCallback} from 'react'
 import {usePathname, useSearchParams} from "next/navigation";
 import {QueryParams, FILTER_OPTIONS} from 'constants/queryParams';
 
-// 쿼리 파라미터의 키를 정의하는 상수 배열
 const QUERY_KEYS: Array<keyof QueryParams> = Object.keys(FILTER_OPTIONS).map(key => key.toLowerCase()) as Array<keyof QueryParams>;
 
 export function useQueryParams() {
@@ -12,16 +11,21 @@ export function useQueryParams() {
     const searchParams = useSearchParams();
     const [localQueries, setLocalQueries] = useState<Record<keyof QueryParams, string[]>>({} as Record<keyof QueryParams, string[]>);
 
-    // Initialize local state from URL on first render
     useEffect(() => {
         const initialQueries = {} as Record<keyof QueryParams, string[]>;
-        console.log('initial queries', initialQueries)
         QUERY_KEYS.forEach(key => {
             initialQueries[key] = searchParams.getAll(key);
         });
-        console.log('+++++initial queries', initialQueries)
         setLocalQueries(initialQueries);
     }, []);
+
+    const updateURL = useCallback((newQueries: Record<keyof QueryParams, string[]>) => {
+        const params = new URLSearchParams();
+        Object.entries(newQueries).forEach(([key, values]) => {
+            values.forEach(value => params.append(key, value));
+        });
+        history.replaceState(null, '', `${pathname}?${params.toString()}`);
+    }, [pathname]);
 
     const setQuery = useCallback((key: keyof QueryParams, value: string | string[] | null) => {
         setLocalQueries(prev => {
@@ -34,41 +38,33 @@ export function useQueryParams() {
             return newQueries;
         });
 
-        const params = new URLSearchParams(searchParams.toString());
-        params.delete(key);
-        if (value !== null) {
-            if (Array.isArray(value)) {
-                value.forEach(v => params.append(key, v));
-            } else {
-                params.append(key, value);
-            }
-        }
-        history.replaceState(null, '', `${pathname}?${params.toString()}`);
-    }, [pathname, searchParams]);
+        // URL 업데이트를 다음 틱으로 지연
+        setTimeout(() => updateURL({...localQueries, [key]: Array.isArray(value) ? value : value ? [value] : []}), 0);
+    }, [updateURL, localQueries]);
 
     const addToQuery = useCallback((key: keyof QueryParams, value: string) => {
-        setLocalQueries(prev => ({
-            ...prev,
-            [key]: [...(prev[key] || []), value]
-        }));
-
-        const params = new URLSearchParams(searchParams.toString());
-        params.append(key, value);
-        history.replaceState(null, '', `${pathname}?${params.toString()}`);
-    }, [pathname, searchParams]);
+        setLocalQueries(prev => {
+            const newQueries = {
+                ...prev,
+                [key]: [...(prev[key] || []), value]
+            };
+            // URL 업데이트를 다음 틱으로 지연
+            setTimeout(() => updateURL(newQueries), 0);
+            return newQueries;
+        });
+    }, [updateURL]);
 
     const removeFromQuery = useCallback((key: keyof QueryParams, value: string) => {
-        setLocalQueries(prev => ({
-            ...prev,
-            [key]: (prev[key] || []).filter(v => v !== value)
-        }));
-
-        const params = new URLSearchParams(searchParams.toString());
-        const values = params.getAll(key).filter(v => v !== value);
-        params.delete(key);
-        values.forEach(v => params.append(key, v));
-        history.replaceState(null, '', `${pathname}?${params.toString()}`);
-    }, [pathname, searchParams]);
+        setLocalQueries(prev => {
+            const newQueries = {
+                ...prev,
+                [key]: (prev[key] || []).filter(v => v !== value)
+            };
+            // URL 업데이트를 다음 틱으로 지연
+            setTimeout(() => updateURL(newQueries), 0);
+            return newQueries;
+        });
+    }, [updateURL]);
 
     const getQuery = useCallback((key: keyof QueryParams): string[] => {
         return localQueries[key] || [];
