@@ -1,4 +1,4 @@
-import { HOST } from 'constants/urls';
+import {HOST} from 'constants/urls';
 
 export const getBaseURL = () => {
     // 서버 사이드
@@ -16,7 +16,7 @@ export const getBaseURL = () => {
     return ''; // 상대 경로 사용
 }
 
-export const getFullURL = (path) => {
+export const getFullURL = (path: string) => {
     const baseUrl = getBaseURL();
     return baseUrl ? `${baseUrl}${path}` : path;
 }
