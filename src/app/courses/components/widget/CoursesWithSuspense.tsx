@@ -29,7 +29,7 @@ export const CoursesWithSuspense = () => {
 const Resolved: React.FC = () => {
 
     const [offset, {set}] = useNumber(0);
-    const {data,isLoading, error} = useCourse(offset);
+    const {data, isLoading, error} = useCourse(offset);
     if (!data || !data.courses) return null;
 
     if (isLoading) return <div>Loading...</div>;
@@ -39,8 +39,8 @@ const Resolved: React.FC = () => {
         <>
             {data.courseCount && <h2>{data.courseCount} courses</h2>}
             <CardWrapper>
-                {data.courses.map((course) => (
-                    <CourseCard key={course.title} course={course}/>
+                {data.courses.map((course, index) => (
+                    <CourseCard key={course.title + index} course={course}/>
                 ))}
             </CardWrapper>
             <Pagination offset={offset} set={set}/>

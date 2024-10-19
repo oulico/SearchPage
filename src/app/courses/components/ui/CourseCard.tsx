@@ -22,7 +22,7 @@ export const CourseCard = ({course}: { course: BffCourse }) => {
                         objectFit="contain"
                         borderTopRadius={'md'}
                         width="100%"
-                        height={isLogoImage ? "auto" : "155px"}
+                        height={"155px"}
                     />
                 </Box>
                 <Stack mt='6' spacing='3'>
