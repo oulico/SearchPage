@@ -13,7 +13,7 @@ export const dynamic = 'force-dynamic'; // 이 라인을 추가하여 항상 동
 export default async function CoursesPageServer() {
     const queryClient = new QueryClient();
     const searchParams = new URLSearchParams();
-    // 하드코딩하기.
+    // 하드코딩하기.7jk
     // searchParams를 사용하면, 항상 동적으로 렌더링된다. 느리다!
 
     try {
