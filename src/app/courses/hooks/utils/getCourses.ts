@@ -23,7 +23,7 @@ export const getCourses = async ({queryParams, offset, count}: {
         throw new Error('Invalid base URL');
     }
 
-    const url = `${baseURL}/api/courses?${searchParams.toString()}&offset=${offset}&count=${count}`;
+    const url = `/api/courses?${searchParams.toString()}&offset=${offset}&count=${count}`;
     console.log('URL:', url);
     console.log('Decoded URL:', decodeURIComponent(url));
 
