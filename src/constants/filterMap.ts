@@ -4,56 +4,56 @@ export const FILTER_MAP = {
     courseType: {
         "1": {
             //주제별
-            query: {courseType: "6"},
+            query: {courseType: "1"},
             filter: {"$or": [{"course_type": 0}, {"course_type": 2}]}
         },
         "2": {
             //챌린지
-            query: {courseType: "7"},
+            query: {courseType: "2"},
             filter: {course_type: 1}
         },
         "3": {
             //테스트
-            query: {courseType: "8"},
+            query: {courseType: "3"},
             filter: {course_type: 3}
         }
     },
     format: {
         "4": {
             //자유 선택
-            query: {format: "1"},
+            query: {format: "4"},
             filter: {course_type: 0}
         },
         "5": {
             //순차 학습
-            query: {format: "2"},
+            query: {format: "5"},
             filter: {course_type: 2}
         }
     },
     category: {
         "6": {
             //프로그래밍 기초
-            query: {category: "4"},
+            query: {category: "6"},
             filter: {tag_id: 12}
         },
         "7": {
             //데이터 분석
-            query: {category: "5"},
+            query: {category: "7"},
             filter: {tag_id: 13}
         },
         "8": {
             //웹
-            query: {category: "6"},
+            query: {category: "8"},
             filter: {tag_id: 14}
         },
         "9": {
             //AI
-            query: {category: "7"},
+            query: {category: "9"},
             filter: {tag_id: 22}
         },
         "10": {
             //알고리즘
-            query: {category: "8"},
+            query: {category: "10"},
             filter: {tag_id: 23}
         }
     },

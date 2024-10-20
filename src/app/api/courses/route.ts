@@ -67,6 +67,7 @@ export async function GET(req: NextRequest) {
     const searchParams = req.nextUrl.searchParams
 
     const queryParams = {
+        courseType: searchParams.getAll('course_type'),
         format: searchParams.getAll('format'),
         category: searchParams.getAll('category'),
         level: searchParams.getAll('level'),

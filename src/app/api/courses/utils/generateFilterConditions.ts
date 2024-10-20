@@ -40,7 +40,7 @@ function generateFilterConditions(params: QueryParams): string {
     }
 
     // 나머지 params 처리
-    const filterKeys: (keyof QueryParams)[] = ['format', 'category', 'level', 'programmingLanguage', 'price'];
+    const filterKeys: (keyof QueryParams)[] = ['courseType', 'format', 'category', 'level', 'programmingLanguage', 'price'];
 
     filterKeys.forEach(key => {
         const values = params[key];
