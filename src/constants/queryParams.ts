@@ -2,22 +2,22 @@ import {z} from 'zod';
 
 // 각 필터 옵션 정의
 export const COURSE_TYPE = {
-    SUBJECT: '6',
-    CHALLENGE: '7',
-    TEST: '8',
+    SUBJECT: '1',
+    CHALLENGE: '2',
+    TEST: '3',
 } as const;
 
 export const FORMAT = {
-    FREE_CHOICE: '1',
-    SEQUENTIAL: '2',
+    FREE_CHOICE: '4',
+    SEQUENTIAL: '5',
 } as const;
 
 export const CATEGORY = {
-    PROGRAMMING_BASICS: '4',
-    DATA_ANALYSIS: '5',
-    WEB: '6',
-    AI: '7',
-    ALGORITHM: '8',
+    PROGRAMMING_BASICS: '6',
+    DATA_ANALYSIS: '7',
+    WEB: '8',
+    AI: '9',
+    ALGORITHM: '10',
 } as const;
 
 export const LEVEL = {
