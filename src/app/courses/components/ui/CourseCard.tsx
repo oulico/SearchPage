@@ -11,7 +11,7 @@ export const CourseCard = ({course}: { course: BffCourse }) => {
     const placeholderImageUrl = "https://placehold.co/600x400/png?text=No+Image";
 
     return (
-        <Card maxW='sm' height={'100%'}>
+        <Card maxW='sm' height={'400px'}>
             <CardBody padding={0}>
                 <Box
                     margin={isLogoImage ? 'auto' : '0'}
