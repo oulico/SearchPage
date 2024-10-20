@@ -22,10 +22,11 @@ export const getBaseURL = () => {
         console.log('Client-side environment:', process.env.NODE_ENV);
         console.log('NEXT_PUBLIC_VERCEL_URL:', process.env.NEXT_PUBLIC_VERCEL_URL);
 
-        if (process.env.NEXT_PUBLIC_VERCEL_URL) {
-            console.log('if process.env.NEXT_PUBLIC_VERCEL_URL:', process.env.NEXT_PUBLIC_VERCEL_URL);
-            return `https://${process.env.NEXT_PUBLIC_VERCEL_URL}`;
-        } else if (process.env.NODE_ENV === 'development') {
+        // if (process.env.NEXT_PUBLIC_VERCEL_URL) {
+        //     console.log('if process.env.NEXT_PUBLIC_VERCEL_URL:', process.env.NEXT_PUBLIC_VERCEL_URL);
+        //     return `https://${process.env.NEXT_PUBLIC_VERCEL_URL}`;
+        // } else
+        if (process.env.NODE_ENV === 'development') {
             console.log('else if process.env.NEXT_PUBLIC_VERCEL_URL:', process.env.NEXT_PUBLIC_VERCEL_URL);
             return 'http://localhost:3000';
         } else {
